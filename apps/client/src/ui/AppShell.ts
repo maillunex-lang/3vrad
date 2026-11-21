@@ -26,6 +26,14 @@ const LABEL = new TextStyle({
 
 type Tab = 'island' | 'play' | 'shop' | 'team' | 'pvp';
 
+const TABS: { id: Tab; icon: string; label: string }[] = [
+  { id: 'island', icon: UI.navIsland, label: 'Остров' },
+  { id: 'play', icon: UI.navPlay, label: 'Игра' },
+  { id: 'shop', icon: UI.navShop, label: 'Магазин' },
+  { id: 'team', icon: UI.navTeam, label: 'Команда' },
+  { id: 'pvp', icon: UI.navPvp, label: 'PvP' },
+];
+
 const BOOSTER_MAP: Record<string, PowerKind> = {
   booster_rocket: 'rocket_h',
   booster_bomb: 'bomb',
@@ -47,8 +55,20 @@ export class AppShell {
   private island: IslandMap | null = null;
   private game: GameScreen | null = null;
   private seenBeats = new Set<number>();
+  private activeTab: Tab = 'island';
+  private hashBound = false;
+  private navReady = false;
+  private highlight = new Graphics();
+  private switching = false;
 
   constructor(private app: Application) {
+    // Content must not steal pointer events in the bottom nav band.
+    this.content.eventMode = 'passive';
+    this.content.hitArea = new Rectangle(0, 0, DESIGN_WIDTH, DESIGN_HEIGHT - 100);
+    this.nav.eventMode = 'static';
+    this.nav.zIndex = 100;
+    this.overlayHost.zIndex = 200;
+    this.root.sortableChildren = true;
     this.root.addChild(this.content);
     this.root.addChild(this.nav);
     this.root.addChild(this.overlayHost);
@@ -81,67 +101,67 @@ export class AppShell {
       this.buildings = [];
       this.inventory = [];
     }
-    await this.buildNav();
+    await this.buildNavOnce();
     const fromHash = this.tabFromHash();
     await this.showTab(fromHash ?? 'island', !fromHash);
   }
 
-  private activeTab: Tab = 'island';
-  private hashBound = false;
-
-  private async buildNav(): Promise<void> {
+  /** Build nav once — never destroy hit targets on tab switch. */
+  private async buildNavOnce(): Promise<void> {
+    if (this.navReady) return;
+    this.navReady = true;
     this.nav.removeChildren();
-    this.nav.eventMode = 'static';
-    this.nav.hitArea = new Rectangle(0, DESIGN_HEIGHT - 100, DESIGN_WIDTH, 100);
+    this.nav.sortableChildren = true;
 
     const bar = new Graphics()
       .rect(0, DESIGN_HEIGHT - 100, DESIGN_WIDTH, 100)
       .fill({ color: 0x04261d, alpha: 0.96 });
     bar.eventMode = 'none';
+    bar.zIndex = 0;
     this.nav.addChild(bar);
 
-    const tabs: { id: Tab; icon: string; label: string }[] = [
-      { id: 'island', icon: UI.navIsland, label: 'Остров' },
-      { id: 'play', icon: UI.navPlay, label: 'Игра' },
-      { id: 'shop', icon: UI.navShop, label: 'Магазин' },
-      { id: 'team', icon: UI.navTeam, label: 'Команда' },
-      { id: 'pvp', icon: UI.navPvp, label: 'PvP' },
-    ];
-    const slot = DESIGN_WIDTH / tabs.length;
-    for (let i = 0; i < tabs.length; i++) {
-      const t = tabs[i]!;
-      const x = slot * i + slot / 2;
+    this.highlight.zIndex = 1;
+    this.nav.addChild(this.highlight);
+    this.paintHighlight();
+
+    const slot = DESIGN_WIDTH / TABS.length;
+    for (let i = 0; i < TABS.length; i++) {
+      const t = TABS[i]!;
       const slotBox = new Container();
+      slotBox.zIndex = 10;
       slotBox.position.set(slot * i, DESIGN_HEIGHT - 100);
       slotBox.eventMode = 'static';
       slotBox.cursor = 'pointer';
       slotBox.hitArea = new Rectangle(0, 0, slot, 100);
-      if (this.activeTab === t.id) {
-        const active = new Graphics().rect(0, 0, slot, 100).fill({ color: 0x0b6e4f, alpha: 0.4 });
-        active.eventMode = 'none';
-        slotBox.addChild(active);
-      }
-      slotBox.on('pointertap', () => void this.showTab(t.id));
+      // pointerdown is more reliable than tap when UI rebuilds elsewhere
+      const go = () => {
+        if (this.activeTab === t.id) return;
+        void this.showTab(t.id);
+      };
+      slotBox.on('pointerdown', go);
+      slotBox.on('pointertap', go);
       this.nav.addChild(slotBox);
+
       try {
         const tex = await Assets.load(t.icon);
         const spr = new Sprite(tex);
         spr.anchor.set(0.5);
-        spr.position.set(x, DESIGN_HEIGHT - 62);
+        spr.position.set(slot / 2, 38);
         spr.scale.set(0.55);
         spr.eventMode = 'none';
-        this.nav.addChild(spr);
+        slotBox.addChild(spr);
       } catch {
-        const g = new Graphics().circle(x, DESIGN_HEIGHT - 62, 22).fill({ color: 0x0b6e4f });
+        const g = new Graphics().circle(slot / 2, 38, 22).fill({ color: 0x0b6e4f });
         g.eventMode = 'none';
-        this.nav.addChild(g);
+        slotBox.addChild(g);
       }
       const lab = new Text({ text: t.label, style: LABEL });
       lab.anchor.set(0.5, 0);
-      lab.position.set(x, DESIGN_HEIGHT - 36);
+      lab.position.set(slot / 2, 64);
       lab.eventMode = 'none';
-      this.nav.addChild(lab);
+      slotBox.addChild(lab);
     }
+
     if (!this.hashBound) {
       this.hashBound = true;
       window.addEventListener('hashchange', () => {
@@ -149,6 +169,17 @@ export class AppShell {
         if (tab && tab !== this.activeTab) void this.showTab(tab, false);
       });
     }
+  }
+
+  private paintHighlight(): void {
+    const slot = DESIGN_WIDTH / TABS.length;
+    const idx = TABS.findIndex((t) => t.id === this.activeTab);
+    this.highlight.clear();
+    if (idx < 0) return;
+    this.highlight
+      .rect(slot * idx, DESIGN_HEIGHT - 100, slot, 100)
+      .fill({ color: 0x0b6e4f, alpha: 0.4 });
+    this.highlight.eventMode = 'none';
   }
 
   private tabFromHash(): Tab | null {
@@ -159,57 +190,68 @@ export class AppShell {
   }
 
   private async showTab(tab: Tab, pushHash = true): Promise<void> {
-    this.activeTab = tab;
-    if (pushHash) location.hash = `#/${tab}`;
-    await this.buildNav();
-    this.content.removeChildren();
-    this.island = null;
-    this.game = null;
+    if (this.switching && tab === this.activeTab) return;
+    this.switching = true;
+    try {
+      this.activeTab = tab;
+      this.paintHighlight();
+      if (pushHash && location.hash !== `#/${tab}`) {
+        location.hash = `#/${tab}`;
+      }
 
-    if (tab === 'island') {
-      this.island = new IslandMap(this.player, this.buildings, {
-        onPlayLevel: () => void this.showTab('play'),
+      this.content.removeChildren();
+      this.island = null;
+      this.game = null;
+
+      if (tab === 'island') {
+        this.island = new IslandMap(this.player, this.buildings, {
+          onPlayLevel: () => void this.showTab('play'),
+        });
+        this.content.addChild(this.island.root);
+        return;
+      }
+      if (tab === 'play') {
+        const campaignLevelNo = Math.min(100, Math.max(1, this.player.maxLevelCleared + 1));
+        const startingPower = await this.consumeOptionalBooster();
+        // Tab may have changed while awaiting booster fetch.
+        if (this.activeTab !== 'play') return;
+        this.game = new GameScreen(this.app, {
+          campaignLevel: campaignLevelNo,
+          startingPower,
+          onWon: (info) => void this.handleWin(info.campaignLevel, info.coinsBase),
+        });
+        this.content.addChild(this.game.root);
+        return;
+      }
+      if (tab === 'shop') {
+        const shop = new ShopScreen(this.player, this.inventory, (p, inv) => {
+          this.player = p;
+          this.inventory = inv;
+        });
+        this.content.addChild(shop.root);
+        return;
+      }
+      if (tab === 'team') {
+        this.content.addChild(new TeamScreen(this.player).root);
+        return;
+      }
+      const stub = new Graphics().rect(0, 0, DESIGN_WIDTH, DESIGN_HEIGHT).fill({ color: 0x063a2c });
+      this.content.addChild(stub);
+      const msg = new Text({
+        text: 'PvP — дуэли 3 мин (E06)\nSERVER-001 A: риск читов\nбез платных преимуществ в рейтинге',
+        style: new TextStyle({
+          fontFamily: 'Trebuchet MS, Segoe UI, sans-serif',
+          fontSize: 28,
+          fill: '#e8fff2',
+          align: 'center',
+        }),
       });
-      this.content.addChild(this.island.root);
-      return;
+      msg.anchor.set(0.5);
+      msg.position.set(DESIGN_WIDTH / 2, DESIGN_HEIGHT / 2);
+      this.content.addChild(msg);
+    } finally {
+      this.switching = false;
     }
-    if (tab === 'play') {
-      const campaignLevelNo = Math.min(100, Math.max(1, this.player.maxLevelCleared + 1));
-      const startingPower = await this.consumeOptionalBooster();
-      this.game = new GameScreen(this.app, {
-        campaignLevel: campaignLevelNo,
-        startingPower,
-        onWon: (info) => void this.handleWin(info.campaignLevel, info.coinsBase),
-      });
-      this.content.addChild(this.game.root);
-      return;
-    }
-    if (tab === 'shop') {
-      const shop = new ShopScreen(this.player, this.inventory, (p, inv) => {
-        this.player = p;
-        this.inventory = inv;
-      });
-      this.content.addChild(shop.root);
-      return;
-    }
-    if (tab === 'team') {
-      this.content.addChild(new TeamScreen(this.player).root);
-      return;
-    }
-    const stub = new Graphics().rect(0, 0, DESIGN_WIDTH, DESIGN_HEIGHT).fill({ color: 0x063a2c });
-    this.content.addChild(stub);
-    const msg = new Text({
-      text: 'PvP — дуэли 3 мин (E06)\nSERVER-001 A: риск читов\nбез платных преимуществ в рейтинге',
-      style: new TextStyle({
-        fontFamily: 'Trebuchet MS, Segoe UI, sans-serif',
-        fontSize: 28,
-        fill: '#e8fff2',
-        align: 'center',
-      }),
-    });
-    msg.anchor.set(0.5);
-    msg.position.set(DESIGN_WIDTH / 2, DESIGN_HEIGHT / 2);
-    this.content.addChild(msg);
   }
 
   /** Auto-use first available booster from inventory when starting a level. */

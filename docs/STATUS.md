@@ -1,7 +1,8 @@
 # Фактический статус разработки
 
 **Обновлено:** 2026-11-21  
-**Ветка:** `cursor/e01-foundation-067d`  
+**Ветка:** `cursor/e01-foundation-067d` · PR https://github.com/maillunex-lang/3vrad/pull/1  
+**HEAD:** `801c93a`  
 **Канон:** GDD-01–13 APPROVED; `LEVELS_001_DRAFT.md` = DRAFT.
 
 ## Сводка

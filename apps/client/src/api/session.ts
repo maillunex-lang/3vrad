@@ -156,10 +156,14 @@ export async function useInventoryItem(itemId: string, idem: string) {
   });
 }
 
+export type TeamQuest = { questId: string; title: string; progress: number; target: number };
+
 export async function fetchTeam() {
-  return api<{ team: TeamInfo | null; members: { playerId: string; displayName: string; role: string }[] }>(
-    '/api/v1/team',
-  );
+  return api<{
+    team: TeamInfo | null;
+    members: { playerId: string; displayName: string; role: string }[];
+    quests?: TeamQuest[];
+  }>('/api/v1/team');
 }
 
 export async function createTeam(name: string) {

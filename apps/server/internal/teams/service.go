@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -118,6 +119,71 @@ func (s *Service) Join(ctx context.Context, playerID, code string) (Team, error)
 	}
 	t.Members = count + 1
 	return t, nil
+}
+
+type Quest struct {
+	QuestID  string `json:"questId"`
+	Title    string `json:"title"`
+	Progress int    `json:"progress"`
+	Target   int    `json:"target"`
+}
+
+var dailyQuests = []struct {
+	ID     string
+	Title  string
+	Target int
+}{
+	{ID: "daily_clears", Title: "Пройти 5 уровней командой", Target: 5},
+	{ID: "daily_builds", Title: "Сделать 3 улучшения зданий", Target: 3},
+}
+
+func (s *Service) EnsureQuests(ctx context.Context, teamID string) error {
+	reset := nextUTCMidnight()
+	for _, q := range dailyQuests {
+		if _, err := s.Pool.Exec(ctx, `
+			INSERT INTO team_quests (team_id, quest_id, progress, target, reset_at)
+			VALUES ($1,$2,0,$3,$4)
+			ON CONFLICT (team_id, quest_id) DO NOTHING`,
+			teamID, q.ID, q.Target, reset); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *Service) ListQuests(ctx context.Context, teamID string) ([]Quest, error) {
+	if err := s.EnsureQuests(ctx, teamID); err != nil {
+		return nil, err
+	}
+	rows, err := s.Pool.Query(ctx, `
+		SELECT quest_id, progress, target FROM team_quests WHERE team_id=$1 ORDER BY quest_id`, teamID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []Quest
+	for rows.Next() {
+		var q Quest
+		if err := rows.Scan(&q.QuestID, &q.Progress, &q.Target); err != nil {
+			return nil, err
+		}
+		for _, d := range dailyQuests {
+			if d.ID == q.QuestID {
+				q.Title = d.Title
+				break
+			}
+		}
+		if q.Title == "" {
+			q.Title = q.QuestID
+		}
+		out = append(out, q)
+	}
+	return out, rows.Err()
+}
+
+func nextUTCMidnight() time.Time {
+	now := time.Now().UTC()
+	return time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, time.UTC)
 }
 
 func (s *Service) GetForPlayer(ctx context.Context, playerID string) (*Team, []Member, error) {

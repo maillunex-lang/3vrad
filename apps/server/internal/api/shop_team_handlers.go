@@ -138,7 +138,16 @@ func (h *Handlers) TeamMe(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusInternalServerError, map[string]any{"error": err.Error()})
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"team": t, "members": members})
+	var quests any
+	if t != nil {
+		q, qerr := h.Teams.ListQuests(r.Context(), t.ID)
+		if qerr != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]any{"error": qerr.Error()})
+			return
+		}
+		quests = q
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"team": t, "members": members, "quests": quests})
 }
 
 func mapTeamErr(w http.ResponseWriter, err error) {

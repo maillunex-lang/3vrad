@@ -1,4 +1,5 @@
 import type { BlockerKind, GemColor, GoalDef, LevelDef } from '../types';
+import { authoredGridFor } from './authoredChapter1';
 
 /**
  * Playable campaign built from LEVELS_001_DRAFT.md.
@@ -213,14 +214,17 @@ export function buildCampaignDraft(): CampaignLevel[] {
   const rows = buildRows();
   return rows.map((row) => {
     const seed = 10_000 + row.n * 97;
+    const authored = authoredGridFor(row.n);
     const level: CampaignLevel = {
       id: `c${String(row.n).padStart(3, '0')}`,
-      width: row.w,
-      height: row.h,
+      width: authored?.width ?? row.w,
+      height: authored?.height ?? row.h,
       moves: row.moves,
       seed,
       goals: goalsFor(row),
-      initialGrid: randomFillGrid(row.w, row.h, seed),
+      initialGrid: authored
+        ? authored.initialGrid.map((line) => line)
+        : randomFillGrid(row.w, row.h, seed),
       colors: [...COLORS],
       meta: {
         levelNo: row.n,
@@ -231,13 +235,15 @@ export function buildCampaignDraft(): CampaignLevel[] {
         draft: true,
       },
     };
-    if (row.obst !== 'none') {
-      const count = row.diff === 'super' ? 10 : row.diff === 'hard' ? 7 : 5;
-      seedBlockers(level, row.obst, count);
-    }
-    // Levels that ask break with obst none still need a few crates for playability.
-    if (row.goalKinds.includes('break') && row.obst === 'none') {
-      seedBlockers(level, 'crate', 4);
+    // Authored boards already place teach crates; only seed extras on RNG fills.
+    if (!authored) {
+      if (row.obst !== 'none') {
+        const count = row.diff === 'super' ? 10 : row.diff === 'hard' ? 7 : 5;
+        seedBlockers(level, row.obst, count);
+      }
+      if (row.goalKinds.includes('break') && row.obst === 'none') {
+        seedBlockers(level, 'crate', 4);
+      }
     }
     return level;
   });

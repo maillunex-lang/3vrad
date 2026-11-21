@@ -43,7 +43,7 @@ export class TeamScreen {
     try {
       const res = await fetchTeam();
       if (res.team) {
-        this.renderTeam(res.team, res.members ?? []);
+        this.renderTeam(res.team, res.members ?? [], res.quests ?? []);
         return;
       }
     } catch (e) {
@@ -57,6 +57,7 @@ export class TeamScreen {
   private renderTeam(
     team: TeamInfo,
     members: { playerId: string; displayName: string; role: string }[],
+    quests: { questId: string; title: string; progress: number; target: number }[],
   ): void {
     const info = new Text({
       text: `${team.name}\nКод: ${team.code}\nУчастники: ${team.members}/30`,
@@ -69,11 +70,22 @@ export class TeamScreen {
         text: `• ${m.displayName} (${m.role})`,
         style: SMALL,
       });
-      row.position.set(48, 260 + i * 28);
+      row.position.set(48, 240 + i * 28);
+      this.body.addChild(row);
+    });
+    const qTitle = new Text({ text: 'Задания дня', style: BODY });
+    qTitle.position.set(40, 240 + members.length * 28 + 24);
+    this.body.addChild(qTitle);
+    quests.forEach((q, i) => {
+      const row = new Text({
+        text: `${q.title}: ${q.progress}/${q.target}`,
+        style: SMALL,
+      });
+      row.position.set(48, 240 + members.length * 28 + 60 + i * 28);
       this.body.addChild(row);
     });
     const note = new Text({
-      text: 'Задания и общий остров — следующие итерации E06.',
+      text: 'Общий остров и чат — дальше по E06. Без рекламы.',
       style: SMALL,
     });
     note.position.set(40, DESIGN_HEIGHT - 160);

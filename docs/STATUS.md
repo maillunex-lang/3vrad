@@ -13,8 +13,8 @@
 | E03 Визуал | IN_PROGRESS | gems/UI/B01/zones + TEMP crate/ice; B02–B20 WIP |
 | E04 Остров | ≈ready | 7 зон, 20 зданий, soft-lock, сюжет 10…70 |
 | E05 Экономика | IN_PROGRESS | guest + shop + inventory (no real payments) |
-| E06 Команды/PvP | scaffold | team create/join/me; PvP stub |
-| E07 100 уровней | DRAFT playable | `campaignDraft.ts` — не утверждённый баланс |
+| E06 Команды/PvP | scaffold | team create/join + daily quests; PvP stub |
+| E07 100 уровней | DRAFT | 100 playable; **authored grids 1–20** |
 
 ## API (проверено go test)
 - Auth/me/clear/buildings (как раньше)

@@ -382,6 +382,7 @@ export class BoardView {
         g.scale.set(1 + t * 2.2);
         g.alpha = Math.max(0, 1 - t);
       }).then(() => g.destroy());
+      this.sparkleAt(p);
     }
   }
 
@@ -398,6 +399,24 @@ export class BoardView {
         .stroke({ width: 3, color: 0xfff56a });
       this.fxLayer.addChild(g);
       setTimeout(() => g.destroy(), 700);
+    }
+  }
+
+  /** Extra sparkle burst on clears (MATCH-002 B / UI-005 C — TEMP particles). */
+  private sparkleAt(pos: Pos, color = 0xffe066): void {
+    const { x, y } = this.cellCenter(pos);
+    for (let i = 0; i < 6; i++) {
+      const ang = (Math.PI * 2 * i) / 6;
+      const dot = new Graphics().circle(0, 0, 4).fill({ color });
+      dot.position.set(this.boardLayer.x + x, this.boardLayer.y + y);
+      this.fxLayer.addChild(dot);
+      void tween(320, (t) => {
+        dot.position.set(
+          this.boardLayer.x + x + Math.cos(ang) * 28 * t,
+          this.boardLayer.y + y + Math.sin(ang) * 28 * t,
+        );
+        dot.alpha = Math.max(0, 1 - t);
+      }).then(() => dot.destroy());
     }
   }
 

@@ -62,12 +62,20 @@ export class BoardView {
     this.bindInput();
 
     engine.on((ev) => {
-      if (ev.type === 'status' || ev.type === 'clear' || ev.type === 'swap' || ev.type === 'swap_revert' || ev.type === 'shuffle' || ev.type === 'power_created' || ev.type === 'fall') {
-        this.syncFromEngine();
+      if (ev.type === 'swap' || ev.type === 'swap_revert') {
+        this.animateSwap(ev.a, ev.b, () => undefined);
+        return;
       }
-      if (ev.type === 'clear') this.burst(ev.cells.map((c) => c.pos));
+      if (ev.type === 'clear') {
+        this.burst(ev.cells.map((c) => c.pos));
+        return;
+      }
       if (ev.type === 'help_offer') this.showHelp(ev.options);
       if (ev.type === 'hint') this.flashHints(ev.moves);
+      // Full board rebuild once per player action (engine is sync; FX run in parallel).
+      if (ev.type === 'resolve_end' || ev.type === 'shuffle' || ev.type === 'status') {
+        window.setTimeout(() => this.syncFromEngine(), 150);
+      }
     });
   }
 
@@ -78,9 +86,15 @@ export class BoardView {
     this.drawStaticBoard();
     this.syncFromEngine();
     engine.on((ev) => {
+      if (ev.type === 'swap' || ev.type === 'swap_revert') {
+        this.animateSwap(ev.a, ev.b, () => undefined);
+        return;
+      }
       if (ev.type === 'clear') this.burst(ev.cells.map((c) => c.pos));
       if (ev.type === 'help_offer') this.showHelp(ev.options);
-      this.syncFromEngine();
+      if (ev.type === 'resolve_end' || ev.type === 'shuffle' || ev.type === 'status') {
+        window.setTimeout(() => this.syncFromEngine(), 150);
+      }
     });
   }
 
@@ -272,6 +286,35 @@ export class BoardView {
     }
     this.selected = pos;
     this.syncFromEngine();
+  }
+
+  private cellCenter(pos: Pos): { x: number; y: number } {
+    return {
+      x: pos.c * this.cellSize + this.cellSize / 2,
+      y: pos.r * this.cellSize + this.cellSize / 2,
+    };
+  }
+
+  private animateSwap(a: Pos, b: Pos, done: () => void): void {
+    const na = this.gemNodes.get(`${a.r},${a.c}`);
+    const nb = this.gemNodes.get(`${b.r},${b.c}`);
+    if (!na || !nb) {
+      done();
+      return;
+    }
+    const ca = this.cellCenter(a);
+    const cb = this.cellCenter(b);
+    const start = performance.now();
+    const dur = 140;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / dur);
+      const e = t * (2 - t);
+      na.position.set(ca.x + (cb.x - ca.x) * e, ca.y + (cb.y - ca.y) * e);
+      nb.position.set(cb.x + (ca.x - cb.x) * e, cb.y + (ca.y - cb.y) * e);
+      if (t < 1) requestAnimationFrame(tick);
+      else done();
+    };
+    requestAnimationFrame(tick);
   }
 
   private burst(positions: Pos[]): void {

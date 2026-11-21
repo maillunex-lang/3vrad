@@ -61,7 +61,8 @@ export type EngineEvent =
   | { type: 'shuffle' }
   | { type: 'status'; status: GameStatus }
   | { type: 'hint'; moves: [Pos, Pos][] }
-  | { type: 'help_offer'; options: PowerKind[] };
+  | { type: 'help_offer'; options: PowerKind[] }
+  | { type: 'resolve_end' };
 
 export type EngineSnapshot = {
   width: number;

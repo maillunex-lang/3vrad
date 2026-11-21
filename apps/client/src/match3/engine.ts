@@ -118,6 +118,7 @@ export class Match3Engine {
       this.movesLeft -= 1;
       this.resolvePowerCombo(a, b);
       this.afterMoveResolve();
+      this.emit({ type: 'resolve_end' });
       return true;
     }
 
@@ -131,6 +132,7 @@ export class Match3Engine {
       this.activatePower(pearlPos, 'pearl');
       this.pendingPearlColor = null;
       this.afterMoveResolve();
+      this.emit({ type: 'resolve_end' });
       return true;
     }
 
@@ -138,12 +140,14 @@ export class Match3Engine {
     if (matches.length === 0) {
       this.swapCells(a, b);
       this.emit({ type: 'swap_revert', a, b });
+      this.emit({ type: 'resolve_end' });
       return false;
     }
 
     this.movesLeft -= 1;
     this.resolveBoard();
     this.afterMoveResolve();
+    this.emit({ type: 'resolve_end' });
     return true;
   }
 
@@ -155,6 +159,7 @@ export class Match3Engine {
     this.movesLeft -= 1;
     this.activatePower(pos, cell.power);
     this.afterMoveResolve();
+    this.emit({ type: 'resolve_end' });
     return true;
   }
 

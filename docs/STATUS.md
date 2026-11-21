@@ -17,7 +17,7 @@
 | E07 100 уровней | DRAFT | 100 playable; authored grids 1–20 |
 
 ## Графика (не завышать)
-- B01 gen эталон; B02–B20 **v2 silhouettes**; gen S3 tropical **B03/B05/B10/B20**
+- B01 gen эталон; B02–B20 **gen S3 tropical** (все); S0/S1/lux/fantasy ещё v2 procedural
 - TEMP portraits: Клеш / Майя(робот) / Кеф / Исследователь
 - VFX: clear_burst, zone_reveal, star_shimmer (+ code sparkles)
 - Журнал: `docs/art/ART_PRODUCTION.md`

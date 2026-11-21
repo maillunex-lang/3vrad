@@ -20,10 +20,21 @@ func TestShopPurchaseIdempotent(t *testing.T) {
 		t.Skip("no postgres:", err)
 	}
 	defer pool.Close()
-	for _, dir := range []string{"../../migrations", "migrations"} {
-		if err := db.Migrate(ctx, pool, dir); err == nil {
-			break
+	applied := false
+	var lastErr error
+	for _, dir := range []string{os.Getenv("MIGRATIONS_DIR"), "../../migrations", "migrations"} {
+		if dir == "" {
+			continue
 		}
+		if err := db.Migrate(ctx, pool, dir); err == nil {
+			applied = true
+			break
+		} else {
+			lastErr = err
+		}
+	}
+	if !applied {
+		t.Fatalf("migrate failed: %v", lastErr)
 	}
 	svc := &progress.Service{Pool: pool}
 	p, err := svc.CreateGuest(ctx, "Shopper")

@@ -21,10 +21,24 @@ func TestCreateJoinTeam(t *testing.T) {
 		t.Skip("no postgres:", err)
 	}
 	defer pool.Close()
-	for _, dir := range []string{"../../migrations", "migrations", "../migrations"} {
-		if err := db.Migrate(ctx, pool, dir); err == nil {
-			break
+
+	dir := os.Getenv("MIGRATIONS_DIR")
+	candidates := []string{dir, "../../migrations", "migrations", "../migrations"}
+	applied := false
+	var lastErr error
+	for _, c := range candidates {
+		if c == "" {
+			continue
 		}
+		if err := db.Migrate(ctx, pool, c); err == nil {
+			applied = true
+			break
+		} else {
+			lastErr = err
+		}
+	}
+	if !applied {
+		t.Fatalf("migrate failed: %v", lastErr)
 	}
 
 	prog := &progress.Service{Pool: pool}

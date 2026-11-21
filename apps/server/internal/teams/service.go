@@ -155,6 +155,9 @@ func (s *Service) ListQuests(ctx context.Context, teamID string) ([]Quest, error
 	if err := s.EnsureQuests(ctx, teamID); err != nil {
 		return nil, err
 	}
+	if err := s.resetExpiredQuests(ctx, teamID); err != nil {
+		return nil, err
+	}
 	rows, err := s.Pool.Query(ctx, `
 		SELECT quest_id, progress, target FROM team_quests WHERE team_id=$1 ORDER BY quest_id`, teamID)
 	if err != nil {
@@ -179,6 +182,42 @@ func (s *Service) ListQuests(ctx context.Context, teamID string) ([]Quest, error
 		out = append(out, q)
 	}
 	return out, rows.Err()
+}
+
+func (s *Service) resetExpiredQuests(ctx context.Context, teamID string) error {
+	reset := nextUTCMidnight()
+	_, err := s.Pool.Exec(ctx, `
+		UPDATE team_quests
+		SET progress = 0, reset_at = $2
+		WHERE team_id = $1 AND reset_at <= NOW()`, teamID, reset)
+	return err
+}
+
+// IncrementQuest bumps a daily team quest for the player's team (no-op if not in a team).
+// Caps at target; safe to call after clear/build.
+func (s *Service) IncrementQuest(ctx context.Context, playerID, questID string, delta int) error {
+	if delta <= 0 {
+		return nil
+	}
+	var teamID string
+	err := s.Pool.QueryRow(ctx, `SELECT team_id::text FROM team_members WHERE player_id=$1`, playerID).Scan(&teamID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if err := s.EnsureQuests(ctx, teamID); err != nil {
+		return err
+	}
+	if err := s.resetExpiredQuests(ctx, teamID); err != nil {
+		return err
+	}
+	_, err = s.Pool.Exec(ctx, `
+		UPDATE team_quests
+		SET progress = LEAST(target, progress + $3)
+		WHERE team_id = $1 AND quest_id = $2`, teamID, questID, delta)
+	return err
 }
 
 func nextUTCMidnight() time.Time {

@@ -13,8 +13,8 @@
 | E03 Визуал | IN_PROGRESS | art pass: B02–B20 v2, 4 TEMP portraits, 3 VFX; not Premium |
 | E04 Остров | ≈ready | 7 зон, 20 зданий, soft-lock, сюжет 10…70 |
 | E05 Экономика | IN_PROGRESS | guest + shop + inventory (no real payments) |
-| E06 Команды/PvP | scaffold | team create/join + daily quests; PvP stub |
-| E07 100 уровней | DRAFT | 100 playable; authored grids 1–20 |
+| E06 Команды/PvP | scaffold | team create/join + quests increment on clear/build; PvP stub |
+| E07 100 уровней | DRAFT | 100 playable; authored grids 1–40 |
 
 ## Графика (не завышать)
 - B01 gen эталон; B02–B20 **gen S0+S1+S3 tropical** (все); luxury/fantasy S3 ещё v2 procedural
@@ -23,7 +23,10 @@
 - Журнал: `docs/art/ART_PRODUCTION.md`
 
 ## API
-- Auth/me/clear/buildings/shop/inventory/team (+ quests list)
+- Auth/me/clear/buildings/shop/inventory/team (+ quests list; clear→daily_clears, build→daily_builds)
+
+## UI
+- Bottom nav: stable hit targets (no rebuild on tab switch)
 
 ## Не заявлено DONE
 - Полный Premium B02–B20 все стили/этапы

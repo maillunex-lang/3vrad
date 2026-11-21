@@ -70,6 +70,9 @@ func (h *Handlers) ClearLevel(w http.ResponseWriter, r *http.Request) {
 		mapProgressErr(w, err)
 		return
 	}
+	if h.Teams != nil {
+		_ = h.Teams.IncrementQuest(r.Context(), p.ID, "daily_clears", 1)
+	}
 	writeJSON(w, http.StatusOK, res)
 }
 
@@ -93,6 +96,9 @@ func (h *Handlers) BuildAdvance(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		mapProgressErr(w, err)
 		return
+	}
+	if h.Teams != nil {
+		_ = h.Teams.IncrementQuest(r.Context(), p.ID, "daily_builds", 1)
 	}
 	writeJSON(w, http.StatusOK, res)
 }

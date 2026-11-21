@@ -69,4 +69,38 @@ func TestCreateJoinTeam(t *testing.T) {
 	if err != nil || got == nil || len(members) != 2 {
 		t.Fatalf("get: %v %v %v", got, members, err)
 	}
+
+	if err := svc.IncrementQuest(ctx, a.ID, "daily_clears", 2); err != nil {
+		t.Fatal(err)
+	}
+	if err := svc.IncrementQuest(ctx, b.ID, "daily_builds", 1); err != nil {
+		t.Fatal(err)
+	}
+	quests, err := svc.ListQuests(ctx, team.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	byID := map[string]teams.Quest{}
+	for _, q := range quests {
+		byID[q.QuestID] = q
+	}
+	if byID["daily_clears"].Progress != 2 {
+		t.Fatalf("clears progress %d", byID["daily_clears"].Progress)
+	}
+	if byID["daily_builds"].Progress != 1 {
+		t.Fatalf("builds progress %d", byID["daily_builds"].Progress)
+	}
+	// Cap at target
+	if err := svc.IncrementQuest(ctx, a.ID, "daily_clears", 99); err != nil {
+		t.Fatal(err)
+	}
+	quests, err = svc.ListQuests(ctx, team.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, q := range quests {
+		if q.QuestID == "daily_clears" && q.Progress != q.Target {
+			t.Fatalf("expected cap at %d got %d", q.Target, q.Progress)
+		}
+	}
 }

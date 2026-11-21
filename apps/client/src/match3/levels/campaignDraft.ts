@@ -48,10 +48,28 @@ const ROWS: Row[] = [
   r(18, 'I1', 2, 'hard', 7, 6, 29, 80, 'crate', ['collect']),
   r(19, 'I1', 2, 'normal', 7, 6, 33, 50, 'crate', ['score']),
   r(20, 'I1', 2, 'super', 7, 6, 23, 120, 'crate', ['fruit']),
-  // Ch3 21–30 ice/crate mix
-  ...chapterRange(21, 30, 'I1', 3, 7, 7, 'ice'),
+  // Ch3 21–30 ice/crate alternate (LEVELS_001)
+  r(21, 'I1', 3, 'normal', 7, 7, 29, 50, 'ice', ['score', 'fruit']),
+  r(22, 'I1', 3, 'normal', 7, 7, 30, 50, 'crate', ['fruit', 'break']),
+  r(23, 'I1', 3, 'normal', 7, 7, 31, 50, 'ice', ['break', 'collect']),
+  r(24, 'I1', 3, 'hard', 7, 7, 29, 80, 'crate', ['score', 'fruit']),
+  r(25, 'I1', 3, 'normal', 7, 7, 28, 50, 'ice', ['fruit', 'break']),
+  r(26, 'I1', 3, 'normal', 7, 7, 29, 50, 'crate', ['break', 'collect']),
+  r(27, 'I1', 3, 'normal', 7, 7, 30, 50, 'ice', ['score', 'fruit']),
+  r(28, 'I1', 3, 'hard', 7, 7, 28, 80, 'crate', ['fruit', 'break']),
+  r(29, 'I1', 3, 'normal', 7, 7, 32, 50, 'ice', ['break', 'collect']),
+  r(30, 'I1', 3, 'normal', 7, 7, 28, 50, 'crate', ['score', 'fruit']),
   // Ch4 31–40
-  ...chapterRange(31, 40, 'I1', 4, 8, 7, 'crate'),
+  r(31, 'I1', 4, 'normal', 8, 7, 29, 50, 'crate', ['break', 'collect']),
+  r(32, 'I1', 4, 'hard', 8, 7, 27, 80, 'ice', ['collect', 'score']),
+  r(33, 'I1', 4, 'normal', 8, 7, 31, 50, 'crate', ['fruit', 'break']),
+  r(34, 'I1', 4, 'normal', 8, 7, 32, 50, 'ice', ['break', 'collect']),
+  r(35, 'I1', 4, 'super', 8, 7, 23, 120, 'crate', ['collect', 'score']),
+  r(36, 'I1', 4, 'normal', 8, 7, 29, 50, 'ice', ['fruit', 'break']),
+  r(37, 'I1', 4, 'normal', 8, 7, 30, 50, 'crate', ['break', 'collect']),
+  r(38, 'I1', 4, 'normal', 8, 7, 31, 50, 'ice', ['collect', 'score']),
+  r(39, 'I1', 4, 'hard', 8, 7, 29, 80, 'crate', ['fruit', 'break']),
+  r(40, 'I1', 4, 'normal', 8, 7, 27, 50, 'ice', ['break', 'collect']),
   // Ch5 41–50 (shells→crate)
   ...chapterRange(41, 50, 'I1', 5, 8, 7, 'crate'),
   // Ch6 51–60 (sand→ice)

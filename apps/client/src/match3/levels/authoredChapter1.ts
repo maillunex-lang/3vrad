@@ -1,7 +1,10 @@
+import { CH2 } from './authoredChapter2';
+
 /**
  * Hand-authored boards for campaign levels 1–20 (E07).
  * Still DRAFT balance (moves/goals from LEVELS_001), but grids are designed
  * for teachable swaps — not pure RNG fills.
+ * Levels 21–40 live in authoredChapter2 and are merged into authoredGridFor.
  */
 export type AuthoredGrid = {
   levelNo: number;
@@ -274,12 +277,12 @@ const CH1: AuthoredGrid[] = [
   },
 ];
 
-const BY_NO = new Map(CH1.map((g) => [g.levelNo, g]));
+const BY_NO = new Map([...CH1, ...CH2].map((g) => [g.levelNo, g]));
 
 export function authoredGridFor(levelNo: number): AuthoredGrid | undefined {
   return BY_NO.get(levelNo);
 }
 
 export function authoredCount(): number {
-  return CH1.length;
+  return CH1.length + CH2.length;
 }

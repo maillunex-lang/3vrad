@@ -1,0 +1,128 @@
+[
+  {
+    "src": "/opt/cursor/artifacts/assets/b01_s0_ruins.jpg",
+    "dest": "apps/client/public/assets/buildings/b01/b01_s0_ruins.webp",
+    "size": [
+      512,
+      512
+    ],
+    "bytes": 94036
+  },
+  {
+    "src": "/opt/cursor/artifacts/assets/b01_s1_repair.jpg",
+    "dest": "apps/client/public/assets/buildings/b01/b01_s1_repair.webp",
+    "size": [
+      512,
+      512
+    ],
+    "bytes": 160872
+  },
+  {
+    "src": "/opt/cursor/artifacts/assets/b01_s3_tropical.jpg",
+    "dest": "apps/client/public/assets/buildings/b01/b01_s3_tropical.webp",
+    "size": [
+      512,
+      512
+    ],
+    "bytes": 78636
+  },
+  {
+    "src": "/opt/cursor/artifacts/assets/b01_s3_luxury.jpg",
+    "dest": "apps/client/public/assets/buildings/b01/b01_s3_luxury.webp",
+    "size": [
+      512,
+      512
+    ],
+    "bytes": 70590
+  },
+  {
+    "src": "/opt/cursor/artifacts/assets/b01_s3_fantasy.jpg",
+    "dest": "apps/client/public/assets/buildings/b01/b01_s3_fantasy.webp",
+    "size": [
+      512,
+      512
+    ],
+    "bytes": 79596
+  },
+  {
+    "src": "/opt/cursor/artifacts/assets/gem_mango.jpg",
+    "dest": "apps/client/public/assets/match3/gem_mango.webp",
+    "size": [
+      256,
+      256
+    ],
+    "bytes": 14096
+  },
+  {
+    "src": "/opt/cursor/artifacts/assets/gem_dragon.jpg",
+    "dest": "apps/client/public/assets/match3/gem_dragon.webp",
+    "size": [
+      256,
+      256
+    ],
+    "bytes": 14020
+  },
+  {
+    "src": "/opt/cursor/artifacts/assets/gem_lime.jpg",
+    "dest": "apps/client/public/assets/match3/gem_lime.webp",
+    "size": [
+      256,
+      256
+    ],
+    "bytes": 18904
+  },
+  {
+    "src": "/opt/cursor/artifacts/assets/gem_passion.jpg",
+    "dest": "apps/client/public/assets/match3/gem_passion.webp",
+    "size": [
+      256,
+      256
+    ],
+    "bytes": 16714
+  },
+  {
+    "src": "/opt/cursor/artifacts/assets/gem_blue.jpg",
+    "dest": "apps/client/public/assets/match3/gem_blue.webp",
+    "size": [
+      256,
+      256
+    ],
+    "bytes": 10088
+  },
+  {
+    "src": "/opt/cursor/artifacts/assets/power_rocket.jpg",
+    "dest": "apps/client/public/assets/match3/power_rocket.webp",
+    "size": [
+      256,
+      256
+    ],
+    "bytes": 9412
+  },
+  {
+    "src": "/opt/cursor/artifacts/assets/power_bomb.jpg",
+    "dest": "apps/client/public/assets/match3/power_bomb.webp",
+    "size": [
+      256,
+      256
+    ],
+    "bytes": 10356
+  },
+  {
+    "src": "/opt/cursor/artifacts/assets/power_pearl.jpg",
+    "dest": "apps/client/public/assets/match3/power_pearl.webp",
+    "size": [
+      256,
+      256
+    ],
+    "bytes": 18066
+  },
+  {
+    "src": "/opt/cursor/artifacts/assets/power_propeller.jpg",
+    "dest": "apps/client/public/assets/match3/power_propeller.webp",
+    "size": [
+      256,
+      256
+    ],
+    "bytes": 17236
+  }
+]

@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "style": "Paradise Premium Stylized 2D",
+  "notes": "B01 sprites generated+processed from approved prompts; B02–B20 procedural WIP (replaceable objects); UI procedural original; Match-3 gems generated+processed.",
+  "assets": [
+    {"id": "B01-S0", "path": "buildings/b01/b01_s0_ruins.webp", "category": "buildings", "status": "integrated", "license": "project-generated", "source": "GenerateImage+process"},
+    {"id": "B01-S1", "path": "buildings/b01/b01_s1_repair.webp", "category": "buildings", "status": "integrated", "license": "project-generated", "source": "GenerateImage+process"},
+    {"id": "B01-S3-T", "path": "buildings/b01/b01_s3_tropical.webp", "category": "buildings", "status": "integrated", "license": "project-generated", "source": "GenerateImage+process"},
+    {"id": "B01-S3-L", "path": "buildings/b01/b01_s3_luxury.webp", "category": "buildings", "status": "integrated", "license": "project-generated", "source": "GenerateImage+process"},
+    {"id": "B01-S3-F", "path": "buildings/b01/b01_s3_fantasy.webp", "category": "buildings", "status": "integrated", "license": "project-generated", "source": "GenerateImage+process"},
+    {"id": "GEM-MANGO", "path": "match3/gem_mango.webp", "category": "match3", "status": "integrated", "license": "project-generated"},
+    {"id": "GEM-DRAGON", "path": "match3/gem_dragon.webp", "category": "match3", "status": "integrated", "license": "project-generated"},
+    {"id": "GEM-LIME", "path": "match3/gem_lime.webp", "category": "match3", "status": "integrated", "license": "project-generated"},
+    {"id": "GEM-PASSION", "path": "match3/gem_passion.webp", "category": "match3", "status": "integrated", "license": "project-generated"},
+    {"id": "GEM-BLUE", "path": "match3/gem_blue.webp", "category": "match3", "status": "integrated", "license": "project-generated"},
+    {"id": "PWR-ROCKET", "path": "match3/power_rocket.webp", "category": "match3", "status": "integrated", "license": "project-generated"},
+    {"id": "PWR-BOMB", "path": "match3/power_bomb.webp", "category": "match3", "status": "integrated", "license": "project-generated"},
+    {"id": "PWR-PEARL", "path": "match3/power_pearl.webp", "category": "match3", "status": "integrated", "license": "project-generated"},
+    {"id": "PWR-PROP", "path": "match3/power_propeller.webp", "category": "match3", "status": "integrated", "license": "project-generated"}
+  ]
+}

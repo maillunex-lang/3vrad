@@ -1,14 +1,35 @@
-import { Application } from 'pixi.js';
-import { fetchApiVersion } from './api/health';
+import { Application, Assets } from 'pixi.js';
+import { gemPath, powerPath, UI, ZONE_BG, buildingSpritePath } from './assets/catalog';
 import { DESIGN_HEIGHT, DESIGN_WIDTH } from './config';
 import { computeViewport } from './layout/viewport';
-import { GameScreen } from './match3/view/GameScreen';
+import { AppShell } from './ui/AppShell';
 
 const appRoot = document.getElementById('app');
 const statusEl = document.getElementById('status');
 
 function setStatus(text: string): void {
   if (statusEl) statusEl.textContent = text;
+}
+
+async function preloadCoreAssets(): Promise<void> {
+  const urls = [
+    ...['mango', 'dragon', 'lime', 'passion', 'blue'].map(gemPath),
+    ...['rocket_h', 'bomb', 'pearl', 'propeller'].map(powerPath),
+    ...Object.values(UI),
+    ...Object.values(ZONE_BG),
+    buildingSpritePath('B01', 0),
+    buildingSpritePath('B01', 1),
+    buildingSpritePath('B01', 2, 'tropical'),
+  ];
+  await Promise.all(
+    urls.map(async (u) => {
+      try {
+        await Assets.load(u);
+      } catch (e) {
+        console.warn('asset skip', u, e);
+      }
+    }),
+  );
 }
 
 async function boot(): Promise<void> {
@@ -29,18 +50,12 @@ async function boot(): Promise<void> {
   window.addEventListener('resize', () => applyViewport(pixi));
   window.addEventListener('orientationchange', () => applyViewport(pixi));
 
-  try {
-    const controller = new AbortController();
-    const timer = window.setTimeout(() => controller.abort(), 4000);
-    const version = await fetchApiVersion(controller.signal);
-    window.clearTimeout(timer);
-    setStatus(`API ${version.version} · Match-3 E02`);
-  } catch (err) {
-    setStatus(`API офлайн · Match-3 локально (${err instanceof Error ? err.message : String(err)})`);
-  }
+  setStatus('загрузка графики…');
+  await preloadCoreAssets();
+  setStatus('Райский остров · карта + Match-3');
 
-  const game = new GameScreen(pixi);
-  pixi.stage.addChild(game.root);
+  const shell = new AppShell(pixi);
+  pixi.stage.addChild(shell.root);
 }
 
 function applyViewport(pixi: Application): void {

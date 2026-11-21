@@ -14,6 +14,7 @@ import (
 	"github.com/maillunex-lang/3vrad/apps/server/internal/config"
 	"github.com/maillunex-lang/3vrad/apps/server/internal/db"
 	"github.com/maillunex-lang/3vrad/apps/server/internal/logging"
+	"github.com/maillunex-lang/3vrad/apps/server/internal/progress"
 )
 
 func main() {
@@ -47,11 +48,18 @@ func main() {
 	}
 	log.Info("migrations_applied", map[string]any{"dir": migrationsDir})
 
-	h := &api.Handlers{Pool: pool, StartedAt: started, AppEnv: cfg.AppEnv}
+	prog := &progress.Service{Pool: pool}
+	h := &api.Handlers{Pool: pool, StartedAt: started, AppEnv: cfg.AppEnv, Progress: prog}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", h.Healthz)
 	mux.HandleFunc("GET /readyz", h.Readyz)
 	mux.HandleFunc("GET /api/v1/version", h.Version)
+	mux.HandleFunc("POST /api/v1/auth/guest", h.CreateGuest)
+	mux.HandleFunc("GET /api/v1/me", h.Me)
+	mux.HandleFunc("GET /api/v1/buildings/catalog", h.BuildingsCatalog)
+	mux.HandleFunc("POST /api/v1/levels/clear", h.ClearLevel)
+	mux.HandleFunc("POST /api/v1/buildings/advance", h.BuildAdvance)
+	mux.HandleFunc("POST /api/v1/buildings/style", h.SetBuildingStyle)
 
 	var handler http.Handler = mux
 	handler = api.CORS(cfg.CORSOrigins)(handler)

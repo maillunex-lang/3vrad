@@ -1,40 +1,31 @@
 # Фактический статус разработки
 
 **Обновлено:** 2026-11-21  
-**Ветка:** `cursor/e01-foundation-067d` · PR https://github.com/maillunex-lang/3vrad/pull/1  
-**HEAD:** `801c93a`  
-**Канон:** GDD-01–13 APPROVED; `LEVELS_001_DRAFT.md` = DRAFT.
+**Ветка:** `cursor/e04-island-buildings-067d`  
+**Канон:** GDD-01–15 APPROVED; BUILDINGS-001 / ISLAND-MAP-001 / ASSETS-001 / B01-DESIGN-001 A утверждены как baseline.
 
 ## Сводка
 
 | Этап | Статус | Факт |
 |------|--------|------|
-| E01 Фундамент | **DONE** (локально проверено) | PWA Pixi 9:16, Go API+Postgres+миграции, Compose/staging, CI, smoke |
-| E02 Ядро Match-3 | **IN_PROGRESS** | Pure-TS движок + Pixi UI, 10 verify-уровней, усилители/каскады/блокеры-минимум, 25 vitest |
-| E03–E10 | TODO | Не начаты |
+| E01 Фундамент | DONE | PWA+API+CI |
+| E02 Match-3 ядро | IN_PROGRESS≈ready | 28 vitest, спрайты фишек подключены |
+| E03 Визуал | IN_PROGRESS | Дизайн-система UI, gems, B01, зоны; B02–B20 WIP procedural |
+| E04 Остров/стройка | IN_PROGRESS | 7 зон, 20 зданий, сервер звёзд/строек, карточка здания |
+| E05 Прогресс | PARTIAL | Гостевой аккаунт + ledger + first-clear star |
 
-## E01 — DONE
-**Проверено:** `go test ./...`, `npm test/typecheck/build` (client+admin), curl `/healthz` `/readyz` `/api/v1/version`, миграции в Postgres.  
-**Остаток:** зелёный CI на GitHub после push; Docker Compose build опционален для staging-хоста.
+## Графика (не завышать)
+- **Интегрировано:** B01 ×5 webp (gen+process), 5 gems, 4 powerups, UI pack, 7 zone BG + silhouette, procedural B02–B20.
+- **WIP / не финал:** B02–B20 procedural (заменяемые объекты); B01 требует визуальной приёмки vs design A.
+- **Missing:** dedicated obstacle art, character portraits, full VFX atlases.
+- Журнал: `docs/art/ART_PRODUCTION.md` · runtime catalog `assets/catalog/assets_v1.json`
 
-## E02 — IN_PROGRESS
-**Сделано:**
-- ADR-002 правила (ракета/бомба/жемчужина/пропеллер, комбо, лимит каскада 64, множитель очков ≤8).
-- `Match3Engine`: обмен, матчи, каскады, тупик→shuffle, подсказки, помощь после 3 поражений.
-- Блокеры: crate/ice 1–3 слоя.
-- 10 детерминированных verify-уровней; скриптовые победы v01–v07.
-- Pixi `GameScreen` + `BoardView` (тапы, HUD, TEMP-фишки).
+## Сервер экономики (проверено curl + go test)
+- `POST /auth/guest`, `GET /me`, `POST /levels/clear` (1★ first clear 1–70, idempotent)
+- `POST /buildings/advance` / `style` (idempotent, no double spend)
+- Бюджет каталога = **70** ★
 
-**Проверено автотестами:** все 10 verify-уровней воспроизводимо выигрываются (script/greedy).
-
-**Не закрыто для DONE E02:**
-- Более плавные анимации обмена/падения (сейчас sync + burst/select).
-- Расширенные автотесты всех комбо-пар.
-- Ручной smoke на Android (`docs/testing/E02_MATCH3.md`).
-
-**Следующие задачи:** анимация ходов → закрытие E02 → E03 визуал.
-
-## Риски
-- SERVER-001 A — не полноценный античит.
-- LEVELS-001 числа — черновик.
-- TEMP-арт — не выдавать за финал.
+## Не заявлено DONE
+- Полный Premium art для всех 20 зданий
+- Ручной Android smoke карты
+- Production deploy

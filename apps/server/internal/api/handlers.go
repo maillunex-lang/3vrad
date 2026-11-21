@@ -6,14 +6,16 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/maillunex-lang/3vrad/apps/server/internal/progress"
 )
 
-const Version = "0.1.0-e01"
+const Version = "0.2.0-e04"
 
 type Handlers struct {
 	Pool      *pgxpool.Pool
 	StartedAt time.Time
 	AppEnv    string
+	Progress  *progress.Service
 }
 
 func (h *Handlers) Healthz(w http.ResponseWriter, r *http.Request) {

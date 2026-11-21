@@ -1,4 +1,5 @@
-import { Container, Graphics, Text, TextStyle } from 'pixi.js';
+import { Assets, Container, Graphics, Sprite, Text, TextStyle, Texture } from 'pixi.js';
+import { gemPath, powerPath } from '../../assets/catalog';
 import type { Match3Engine } from '../engine';
 import type { EngineEvent, Cell, Pos } from '../types';
 import { BOARD_BG, CELL_BG, GEM_FILL, GEM_STROKE, POWER_LABEL } from './colors';
@@ -232,15 +233,25 @@ export class BoardView {
     }
 
     if (cell.gem) {
-      const g = new Graphics()
-        .circle(0, 0, radius)
-        .fill({ color: GEM_FILL[cell.gem] })
-        .stroke({ width: 3, color: GEM_STROKE[cell.gem] });
-      g.ellipse(-radius * 0.25, -radius * 0.3, radius * 0.35, radius * 0.2).fill({
-        color: 0xffffff,
-        alpha: 0.35,
-      });
-      node.addChild(g);
+      const tex = tryTexture(gemPath(cell.gem));
+      if (tex) {
+        const spr = new Sprite(tex);
+        spr.anchor.set(0.5);
+        const side = radius * 2;
+        spr.width = side;
+        spr.height = side;
+        node.addChild(spr);
+      } else {
+        const g = new Graphics()
+          .circle(0, 0, radius)
+          .fill({ color: GEM_FILL[cell.gem] })
+          .stroke({ width: 3, color: GEM_STROKE[cell.gem] });
+        g.ellipse(-radius * 0.25, -radius * 0.3, radius * 0.35, radius * 0.2).fill({
+          color: 0xffffff,
+          alpha: 0.35,
+        });
+        node.addChild(g);
+      }
     }
 
     if (cell.blocker === 'ice' && cell.blockerLayers > 0) {
@@ -259,14 +270,23 @@ export class BoardView {
     }
 
     if (cell.power) {
-      const ring = new Graphics().circle(0, 0, radius + 2).stroke({ width: 3, color: 0xfff1a8 });
-      node.addChild(ring);
-      const t = new Text({
-        text: POWER_LABEL[cell.power],
-        style: new TextStyle({ fontSize: 22, fill: '#fffef2', fontWeight: '700' }),
-      });
-      t.anchor.set(0.5);
-      node.addChild(t);
+      const ptex = tryTexture(powerPath(cell.power));
+      if (ptex) {
+        const spr = new Sprite(ptex);
+        spr.anchor.set(0.5);
+        spr.width = radius * 1.6;
+        spr.height = radius * 1.6;
+        node.addChild(spr);
+      } else {
+        const ring = new Graphics().circle(0, 0, radius + 2).stroke({ width: 3, color: 0xfff1a8 });
+        node.addChild(ring);
+        const t = new Text({
+          text: POWER_LABEL[cell.power],
+          style: new TextStyle({ fontSize: 22, fill: '#fffef2', fontWeight: '700' }),
+        });
+        t.anchor.set(0.5);
+        node.addChild(t);
+      }
     }
 
     node.eventMode = 'static';
@@ -396,6 +416,15 @@ export class BoardView {
     this.root.addChild(box);
     this.helpContainer = box;
   }
+}
+
+function tryTexture(url: string): Texture | null {
+  try {
+    if (Assets.cache.has(url)) return Assets.get(url);
+  } catch {
+    /* ignore */
+  }
+  return null;
 }
 
 function wait(ms: number): Promise<void> {

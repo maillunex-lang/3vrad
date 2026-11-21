@@ -3,10 +3,10 @@
 Вертикальная (9:16) онлайн PWA-игра жанра Match-3 с восстановлением тропического архипелага, юмористическим сюжетом, PvP и командами.
 
 ## Статус
-- GDD-01–13 утверждены. `LEVELS_001_DRAFT.md` — черновик контента (не финальный баланс).
-- Код: фундамент E01 (клиент/сервер/CI) в разработке; ядро Match-3 — следующий этап.
-- Канон: [docs/GDD_DECISIONS.md](docs/GDD_DECISIONS.md), [docs/GDD_11.md](docs/GDD_11.md), [docs/GDD_12.md](docs/GDD_12.md), [docs/GDD_13.md](docs/GDD_13.md).
-- План: [ROADMAP.md](ROADMAP.md) · факт: [docs/STATUS.md](docs/STATUS.md).
+- GDD-01–15 утверждены; BUILDINGS/ISLAND-MAP/ASSETS/B01 baseline approved.
+- Код: E01 DONE · Match-3 играбелен · карта острова + стройка на сервере в работе.
+- Канон: [docs/GDD_DECISIONS.md](docs/GDD_DECISIONS.md) + GDD_11…15.
+- План: [ROADMAP.md](ROADMAP.md) · факт: [docs/STATUS.md](docs/STATUS.md) · графика: [docs/art/ART_PRODUCTION.md](docs/art/ART_PRODUCTION.md).
 - Cursor: [AGENTS.md](AGENTS.md) · риски: [docs/OPEN_QUESTIONS.md](docs/OPEN_QUESTIONS.md).
 
 ## Технологии

@@ -1,9 +1,11 @@
 import { Application, Container, Graphics, Sprite, Text, TextStyle, Assets } from 'pixi.js';
-import { ensureSession, type BuildingState, type Player } from '../api/session';
+import { clearLevel, ensureSession, type BuildingState, type Player } from '../api/session';
 import { UI } from '../assets/catalog';
 import { DESIGN_HEIGHT, DESIGN_WIDTH } from '../config';
 import { IslandMap } from '../island/IslandMap';
 import { GameScreen } from '../match3/view/GameScreen';
+import { beatForLevel } from '../story/milestones';
+import { StoryOverlay } from '../story/StoryOverlay';
 
 const LABEL = new TextStyle({
   fontFamily: 'Trebuchet MS, Segoe UI, sans-serif',
@@ -20,14 +22,17 @@ export class AppShell {
   readonly root = new Container();
   private content = new Container();
   private nav = new Container();
+  private overlayHost = new Container();
   private player!: Player;
   private buildings: BuildingState[] = [];
   private island: IslandMap | null = null;
   private game: GameScreen | null = null;
+  private seenBeats = new Set<number>();
 
   constructor(private app: Application) {
     this.root.addChild(this.content);
     this.root.addChild(this.nav);
+    this.root.addChild(this.overlayHost);
     void this.boot();
     this.app.ticker.add((t) => {
       this.island?.tick(t.deltaMS);
@@ -39,6 +44,10 @@ export class AppShell {
       const session = await ensureSession();
       this.player = session.player;
       this.buildings = session.buildings;
+      // Replay-safe: do not auto-show past beats on boot.
+      for (const b of [10, 20, 30, 40, 50, 60, 70]) {
+        if (this.player.maxLevelCleared >= b) this.seenBeats.add(b);
+      }
     } catch (e) {
       console.warn('session offline', e);
       this.player = {
@@ -110,7 +119,11 @@ export class AppShell {
       return;
     }
     if (tab === 'play') {
-      this.game = new GameScreen(this.app);
+      const campaignLevel = Math.min(70, this.player.maxLevelCleared + 1);
+      this.game = new GameScreen(this.app, {
+        campaignLevel,
+        onWon: (info) => void this.handleWin(info.campaignLevel),
+      });
       this.content.addChild(this.game.root);
       return;
     }
@@ -133,5 +146,54 @@ export class AppShell {
     msg.anchor.set(0.5);
     msg.position.set(DESIGN_WIDTH / 2, DESIGN_HEIGHT / 2);
     this.content.addChild(msg);
+  }
+
+  private async handleWin(campaignLevel: number): Promise<void> {
+    if (this.player.guestToken) {
+      try {
+        const idem = `clear:${this.player.id}:${campaignLevel}`;
+        const res = await clearLevel(campaignLevel, 50, idem);
+        this.player = {
+          ...this.player,
+          buildStars: res.buildStars,
+          coins: res.coins,
+          maxLevelCleared: res.maxLevelCleared,
+        };
+      } catch (e) {
+        console.warn('clearLevel failed, applying local progress', e);
+        this.applyLocalClear(campaignLevel);
+      }
+    } else {
+      this.applyLocalClear(campaignLevel);
+    }
+
+    const beat = beatForLevel(campaignLevel);
+    if (beat && !this.seenBeats.has(campaignLevel)) {
+      this.seenBeats.add(campaignLevel);
+      await this.showStory(beat);
+    } else {
+      await this.showTab('island');
+    }
+  }
+
+  private applyLocalClear(level: number): void {
+    const first = level > this.player.maxLevelCleared;
+    this.player = {
+      ...this.player,
+      maxLevelCleared: Math.max(this.player.maxLevelCleared, level),
+      buildStars: this.player.buildStars + (first && level <= 70 ? 1 : 0),
+      coins: this.player.coins + 50,
+    };
+  }
+
+  private showStory(beat: NonNullable<ReturnType<typeof beatForLevel>>): Promise<void> {
+    return new Promise((resolve) => {
+      this.overlayHost.removeChildren();
+      const overlay = new StoryOverlay(beat, () => {
+        this.overlayHost.removeChildren();
+        void this.showTab('island').then(() => resolve());
+      });
+      this.overlayHost.addChild(overlay.root);
+    });
   }
 }

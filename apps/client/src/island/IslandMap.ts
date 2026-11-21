@@ -3,6 +3,7 @@ import { buildingSpritePath, UI, ZONE_BG } from '../assets/catalog';
 import { DESIGN_HEIGHT, DESIGN_WIDTH } from '../config';
 import type { BuildingState, Player } from '../api/session';
 import { advanceBuilding, setBuildingStyle } from '../api/session';
+import { STYLE_UNLOCK } from '../story/milestones';
 import { BUILDINGS, ZONES, type BuildingDef } from './catalog';
 
 const TITLE = new TextStyle({
@@ -277,13 +278,20 @@ export class IslandMap {
     } else {
       const styles: Array<'tropical' | 'luxury' | 'fantasy'> = ['tropical', 'luxury', 'fantasy'];
       styles.forEach((s, i) => {
+        const unlocked =
+          s === 'tropical' ||
+          (s === 'luxury' && this.player.maxLevelCleared >= STYLE_UNLOCK.luxury) ||
+          (s === 'fantasy' && this.player.maxLevelCleared >= STYLE_UNLOCK.fantasy);
         const btn = new Graphics()
           .roundRect(60 + i * 180, 540, 160, 48, 12)
-          .fill({ color: st.style === s ? 0x1aa6a6 : 0x0b6e4f });
+          .fill({ color: !unlocked ? 0x44554c : st.style === s ? 0x1aa6a6 : 0x0b6e4f });
         btn.eventMode = 'static';
-        btn.cursor = 'pointer';
-        btn.on('pointertap', () => void this.doStyle(def, s));
-        const t = new Text({ text: s, style: SMALL });
+        btn.cursor = unlocked ? 'pointer' : 'default';
+        if (unlocked) btn.on('pointertap', () => void this.doStyle(def, s));
+        const t = new Text({
+          text: unlocked ? s : `${s} 🔒`,
+          style: SMALL,
+        });
         t.position.set(80 + i * 180, 554);
         this.card.addChild(btn);
         this.card.addChild(t);

@@ -10,9 +10,9 @@
 | Этап | Статус | Факт |
 |------|--------|------|
 | E01 Фундамент | DONE | PWA+API+CI |
-| E02 Match-3 ядро | IN_PROGRESS≈ready | 28 vitest, спрайты фишек подключены |
+| E02 Match-3 ядро | IN_PROGRESS≈ready | vitest engine + clear-on-win → API |
 | E03 Визуал | IN_PROGRESS | Дизайн-система UI, gems, B01, зоны; B02–B20 WIP procedural |
-| E04 Остров/стройка | IN_PROGRESS | 7 зон, 20 зданий, сервер звёзд/строек, карточка здания |
+| E04 Остров/стройка | IN_PROGRESS≈ready | 7 зон, 20 зданий, soft-lock 1–70 ✓, сюжет 10…70 TEMP |
 | E05 Прогресс | PARTIAL | Гостевой аккаунт + ledger + first-clear star |
 
 ## Графика (не завышать)
@@ -26,7 +26,13 @@
 - `POST /buildings/advance` / `style` (idempotent, no double spend)
 - Бюджет каталога = **70** ★
 
+## Soft-lock / сюжет (проверено автотестами)
+- Client: `apps/client/src/island/softlock.test.ts` — greedy 1–70 → все этапы, ★=0
+- Server: `apps/server/internal/buildings/softlock_test.go`
+- Сюжет: `apps/client/src/story/milestones.ts` + `StoryOverlay` на clear 10/20/…/70
+
 ## Не заявлено DONE
 - Полный Premium art для всех 20 зданий
-- Ручной Android smoke карты
+- Ручной Android smoke карты / E02_MATCH3
+- Финальные CHAR-диалоги (сейчас TEMP)
 - Production deploy

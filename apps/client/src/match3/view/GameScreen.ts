@@ -12,6 +12,12 @@ const BTN = new TextStyle({
   fontWeight: '700',
 });
 
+export type GameScreenOptions = {
+  /** Campaign level to report on win (1–70). Board uses verify pack as proxy until LEVELS-001. */
+  campaignLevel?: number;
+  onWon?: (info: { campaignLevel: number; verifyId: string }) => void;
+};
+
 /**
  * Playable Match-3 shell for E02: level picker + board + debug controls.
  */
@@ -22,8 +28,11 @@ export class GameScreen {
   private levelIndex = 0;
   private failStreak = 0;
   private helpUsed = false;
+  private campaignLevel: number;
+  private winReported = false;
 
-  constructor(_app: Application) {
+  constructor(_app: Application, private opts: GameScreenOptions = {}) {
+    this.campaignLevel = Math.max(1, Math.min(70, opts.campaignLevel ?? 1));
     const bg = new Graphics()
       .rect(0, 0, DESIGN_WIDTH, DESIGN_HEIGHT)
       .fill({ color: 0x04261d });
@@ -71,21 +80,14 @@ export class GameScreen {
 
     this.root.addChild(bar);
 
-    this.engine.on((ev) => {
-      if (ev.type === 'status' && ev.status === 'lost') {
-        this.failStreak = this.engine.snapshot().failStreak;
-      }
-      if (ev.type === 'status' && ev.status === 'won') {
-        this.failStreak = 0;
-        this.helpUsed = false;
-      }
-    });
+    this.wireStatus();
   }
 
   private restart(): void {
     const level = VERIFY_LEVELS[this.levelIndex]!;
     this.helpUsed = this.engine.snapshot().helpUsed;
     this.failStreak = this.engine.snapshot().failStreak;
+    this.winReported = false;
     this.engine = this.makeEngine(level);
     this.root.removeChild(this.board.root);
     this.board = new BoardView(this.engine, {
@@ -95,10 +97,10 @@ export class GameScreen {
       maxHeight: DESIGN_HEIGHT - 160,
     });
     this.root.addChildAt(this.board.root, 1);
-    this.wireFailTracking();
+    this.wireStatus();
   }
 
-  private wireFailTracking(): void {
+  private wireStatus(): void {
     this.engine.on((ev) => {
       if (ev.type === 'status' && ev.status === 'lost') {
         this.failStreak = this.engine.snapshot().failStreak;
@@ -106,6 +108,11 @@ export class GameScreen {
       if (ev.type === 'status' && ev.status === 'won') {
         this.failStreak = 0;
         this.helpUsed = false;
+        if (!this.winReported) {
+          this.winReported = true;
+          const verifyId = VERIFY_LEVELS[this.levelIndex]?.id ?? 'v01';
+          this.opts.onWon?.({ campaignLevel: this.campaignLevel, verifyId });
+        }
       }
     });
   }

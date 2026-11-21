@@ -27,6 +27,7 @@ const SMALL = new TextStyle({
 
 export type IslandMapCallbacks = {
   onPlayLevel?: () => void;
+  onBuildingChanged?: (building: BuildingState, buildStars?: number) => void;
 };
 
 /**
@@ -189,7 +190,7 @@ export class IslandMap {
     currencies.position.set(20, 48);
     this.hud.addChild(currencies);
 
-    const navY = DESIGN_HEIGHT - 118;
+    const navY = DESIGN_HEIGHT - 168;
     const mk = (label: string, x: number, fn: () => void) => {
       const g = new Graphics().roundRect(x, navY, 150, 44, 12).fill({ color: 0x0b6e4f });
       g.eventMode = 'static';
@@ -224,7 +225,7 @@ export class IslandMap {
       text: ZONES.map((z, i) => (i === this.zoneIndex ? '●' : unlocked || this.zoneUnlocked(z.id) ? '○' : '·')).join(' '),
       style: SMALL,
     });
-    dots.position.set(24, DESIGN_HEIGHT - 64);
+    dots.position.set(24, navY + 48);
     this.hud.addChild(dots);
     void unlocked;
   }
@@ -316,11 +317,13 @@ export class IslandMap {
     try {
       const res = await advanceBuilding(def.id, idem);
       this.player = { ...this.player, buildStars: res.buildStars };
-      this.states.set(def.id, {
+      const building: BuildingState = {
         buildingId: def.id,
         stage: res.stage,
         style: (res.style as BuildingState['style']) || 'tropical',
-      });
+      };
+      this.states.set(def.id, building);
+      this.cb.onBuildingChanged?.(building, res.buildStars);
       // brief VFX
       const burst = new Graphics().circle(DESIGN_WIDTH / 2, 500, 10).fill({ color: 0xffe066 });
       this.card.addChild(burst);
@@ -333,11 +336,8 @@ export class IslandMap {
   private async doStyle(def: BuildingDef, style: 'tropical' | 'luxury' | 'fantasy'): Promise<void> {
     try {
       const res = await setBuildingStyle(def.id, style);
-      this.states.set(def.id, {
-        buildingId: def.id,
-        stage: res.stage,
-        style: res.style,
-      });
+      this.states.set(def.id, res);
+      this.cb.onBuildingChanged?.(res);
       await this.rebuild();
     } catch (e) {
       console.error(e);

@@ -204,10 +204,16 @@ export class AppShell {
       this.game = null;
 
       if (tab === 'island') {
-        this.island = new IslandMap(this.player, this.buildings, {
+        const island = new IslandMap(this.player, this.buildings, {
           onPlayLevel: () => void this.showTab('play'),
+          onBuildingChanged: (building, buildStars) => {
+            this.buildings = [...this.buildings.filter((b) => b.buildingId !== building.buildingId), building];
+            if (buildStars !== undefined) this.player = { ...this.player, buildStars };
+            if (this.island !== island) this.island?.updatePlayer(this.player, this.buildings);
+          },
         });
-        this.content.addChild(this.island.root);
+        this.island = island;
+        this.content.addChild(island.root);
         return;
       }
       if (tab === 'play') {

@@ -1,38 +1,33 @@
 # Фактический статус разработки
 
 **Обновлено:** 2026-11-21  
-**Ветка:** `main` (рабочая; feature-ветки/PR #1–#2 влиты сюда)  
-**HEAD:** после push — tip с island/build/art  
-**Канон:** GDD-01–15 APPROVED; BUILDINGS-001 / ISLAND-MAP-001 / ASSETS-001 / B01-DESIGN-001 A утверждены как baseline.
+**Ветка:** `main`  
+**Канон:** GDD-01–15 APPROVED; BUILDINGS-001 / ISLAND-MAP-001 / ASSETS-001 / B01-DESIGN-001 A baseline.
 
 ## Сводка
 
 | Этап | Статус | Факт |
 |------|--------|------|
 | E01 Фундамент | DONE | PWA+API+CI |
-| E02 Match-3 ядро | IN_PROGRESS≈ready | vitest engine + clear-on-win → API |
-| E03 Визуал | IN_PROGRESS | Дизайн-система UI, gems, B01, зоны; B02–B20 WIP procedural |
-| E04 Остров/стройка | IN_PROGRESS≈ready | 7 зон, 20 зданий, soft-lock 1–70 ✓, сюжет 10…70 TEMP |
-| E05 Прогресс | PARTIAL | Гостевой аккаунт + ledger + first-clear star |
+| E02 Match-3 | ≈ready | engine + campaign DRAFT 100 + clear-on-win |
+| E03 Визуал | IN_PROGRESS | gems/UI/B01/zones + TEMP crate/ice; B02–B20 WIP |
+| E04 Остров | ≈ready | 7 зон, 20 зданий, soft-lock, сюжет 10…70 |
+| E05 Экономика | IN_PROGRESS | guest + shop + inventory (no real payments) |
+| E06 Команды/PvP | scaffold | team create/join/me; PvP stub |
+| E07 100 уровней | DRAFT playable | `campaignDraft.ts` — не утверждённый баланс |
 
-## Графика (не завышать)
-- **Интегрировано:** B01 ×5 webp (gen+process), 5 gems, 4 powerups, UI pack, 7 zone BG + silhouette, procedural B02–B20.
-- **WIP / не финал:** B02–B20 procedural (заменяемые объекты); B01 требует визуальной приёмки vs design A.
-- **Missing:** dedicated obstacle art, character portraits, full VFX atlases.
-- Журнал: `docs/art/ART_PRODUCTION.md` · runtime catalog `assets/catalog/assets_v1.json`
+## API (проверено go test)
+- Auth/me/clear/buildings (как раньше)
+- `GET /shop/catalog`, `POST /shop/buy`, `GET /inventory`, `POST /inventory/use`
+- `GET /team`, `POST /team/create`, `POST /team/join` (max 30)
 
-## Сервер экономики (проверено curl + go test)
-- `POST /auth/guest`, `GET /me`, `POST /levels/clear` (1★ first clear 1–70, idempotent)
-- `POST /buildings/advance` / `style` (idempotent, no double spend)
-- Бюджет каталога = **70** ★
+## Клиент
+- Вкладки: Остров / Игра (кампания) / Магазин / Команда / PvP-stub
+- 36 vitest; сборка PWA зелёная локально
 
-## Soft-lock / сюжет (проверено автотестами)
-- Client: `apps/client/src/island/softlock.test.ts` — greedy 1–70 → все этапы, ★=0
-- Server: `apps/server/internal/buildings/softlock_test.go`
-- Сюжет: `apps/client/src/story/milestones.ts` + `StoryOverlay` на clear 10/20/…/70
-
-## Не заявлено DONE
-- Полный Premium art для всех 20 зданий
-- Ручной Android smoke карты / E02_MATCH3
-- Финальные CHAR-диалоги (сейчас TEMP)
-- Production deploy
+## Не заявлено DONE / MVP
+- Premium art B02–B20, CHAR-диалоги, VFX atlases
+- Утверждение LEVELS-001
+- Полные команды/PvP/античит
+- Реальные платежи / production deploy
+- Ручной Android smoke

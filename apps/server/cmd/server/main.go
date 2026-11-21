@@ -15,6 +15,7 @@ import (
 	"github.com/maillunex-lang/3vrad/apps/server/internal/db"
 	"github.com/maillunex-lang/3vrad/apps/server/internal/logging"
 	"github.com/maillunex-lang/3vrad/apps/server/internal/progress"
+	"github.com/maillunex-lang/3vrad/apps/server/internal/teams"
 )
 
 func main() {
@@ -49,7 +50,8 @@ func main() {
 	log.Info("migrations_applied", map[string]any{"dir": migrationsDir})
 
 	prog := &progress.Service{Pool: pool}
-	h := &api.Handlers{Pool: pool, StartedAt: started, AppEnv: cfg.AppEnv, Progress: prog}
+	teamSvc := &teams.Service{Pool: pool}
+	h := &api.Handlers{Pool: pool, StartedAt: started, AppEnv: cfg.AppEnv, Progress: prog, Teams: teamSvc}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", h.Healthz)
 	mux.HandleFunc("GET /readyz", h.Readyz)
@@ -60,6 +62,13 @@ func main() {
 	mux.HandleFunc("POST /api/v1/levels/clear", h.ClearLevel)
 	mux.HandleFunc("POST /api/v1/buildings/advance", h.BuildAdvance)
 	mux.HandleFunc("POST /api/v1/buildings/style", h.SetBuildingStyle)
+	mux.HandleFunc("GET /api/v1/shop/catalog", h.ShopCatalog)
+	mux.HandleFunc("POST /api/v1/shop/buy", h.ShopBuy)
+	mux.HandleFunc("GET /api/v1/inventory", h.Inventory)
+	mux.HandleFunc("POST /api/v1/inventory/use", h.UseItem)
+	mux.HandleFunc("GET /api/v1/team", h.TeamMe)
+	mux.HandleFunc("POST /api/v1/team/create", h.TeamCreate)
+	mux.HandleFunc("POST /api/v1/team/join", h.TeamJoin)
 
 	var handler http.Handler = mux
 	handler = api.CORS(cfg.CORSOrigins)(handler)

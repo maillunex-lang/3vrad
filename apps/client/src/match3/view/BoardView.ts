@@ -1,5 +1,5 @@
 import { Assets, Container, Graphics, Sprite, Text, TextStyle, Texture } from 'pixi.js';
-import { gemPath, powerPath } from '../../assets/catalog';
+import { blockerPath, gemPath, powerPath } from '../../assets/catalog';
 import type { Match3Engine } from '../engine';
 import type { EngineEvent, Cell, Pos } from '../types';
 import { BOARD_BG, CELL_BG, GEM_FILL, GEM_STROKE, POWER_LABEL } from './colors';
@@ -218,11 +218,20 @@ export class BoardView {
     const radius = (this.cellSize - this.pad * 2) / 2 - 2;
 
     if (cell.blocker === 'crate') {
-      const g = new Graphics()
-        .roundRect(-radius, -radius, radius * 2, radius * 2, 6)
-        .fill({ color: 0x8b5a2b })
-        .stroke({ width: 2, color: 0x5c3a1a });
-      node.addChild(g);
+      const tex = tryTexture(blockerPath('crate'));
+      if (tex) {
+        const spr = new Sprite(tex);
+        spr.anchor.set(0.5);
+        spr.width = radius * 2;
+        spr.height = radius * 2;
+        node.addChild(spr);
+      } else {
+        const g = new Graphics()
+          .roundRect(-radius, -radius, radius * 2, radius * 2, 6)
+          .fill({ color: 0x8b5a2b })
+          .stroke({ width: 2, color: 0x5c3a1a });
+        node.addChild(g);
+      }
       const t = new Text({
         text: String(cell.blockerLayers),
         style: new TextStyle({ fontSize: 18, fill: '#fff', fontWeight: '700' }),
@@ -255,11 +264,21 @@ export class BoardView {
     }
 
     if (cell.blocker === 'ice' && cell.blockerLayers > 0) {
-      const ice = new Graphics()
-        .roundRect(-radius, -radius, radius * 2, radius * 2, 8)
-        .fill({ color: 0xa0e9ff, alpha: 0.45 })
-        .stroke({ width: 2, color: 0xe0f7ff, alpha: 0.8 });
-      node.addChild(ice);
+      const itex = tryTexture(blockerPath('ice'));
+      if (itex) {
+        const spr = new Sprite(itex);
+        spr.anchor.set(0.5);
+        spr.width = radius * 2.05;
+        spr.height = radius * 2.05;
+        spr.alpha = 0.85;
+        node.addChild(spr);
+      } else {
+        const ice = new Graphics()
+          .roundRect(-radius, -radius, radius * 2, radius * 2, 8)
+          .fill({ color: 0xa0e9ff, alpha: 0.45 })
+          .stroke({ width: 2, color: 0xe0f7ff, alpha: 0.8 });
+        node.addChild(ice);
+      }
       const t = new Text({
         text: `I${cell.blockerLayers}`,
         style: new TextStyle({ fontSize: 14, fill: '#eafcff' }),

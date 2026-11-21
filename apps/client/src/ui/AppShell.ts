@@ -1,11 +1,22 @@
 import { Application, Container, Graphics, Sprite, Text, TextStyle, Assets } from 'pixi.js';
-import { clearLevel, ensureSession, type BuildingState, type Player } from '../api/session';
+import {
+  clearLevel,
+  ensureSession,
+  useInventoryItem,
+  type BuildingState,
+  type InventoryItem,
+  type Player,
+} from '../api/session';
 import { UI } from '../assets/catalog';
 import { DESIGN_HEIGHT, DESIGN_WIDTH } from '../config';
 import { IslandMap } from '../island/IslandMap';
+import { campaignLevel } from '../match3/levels/campaignDraft';
+import type { PowerKind } from '../match3/types';
 import { GameScreen } from '../match3/view/GameScreen';
 import { beatForLevel } from '../story/milestones';
 import { StoryOverlay } from '../story/StoryOverlay';
+import { ShopScreen } from './ShopScreen';
+import { TeamScreen } from './TeamScreen';
 
 const LABEL = new TextStyle({
   fontFamily: 'Trebuchet MS, Segoe UI, sans-serif',
@@ -15,8 +26,15 @@ const LABEL = new TextStyle({
 
 type Tab = 'island' | 'play' | 'shop' | 'team' | 'pvp';
 
+const BOOSTER_MAP: Record<string, PowerKind> = {
+  booster_rocket: 'rocket_h',
+  booster_bomb: 'bomb',
+  booster_propeller: 'propeller',
+  booster_pearl: 'pearl',
+};
+
 /**
- * Main shell: island hub + match-3 + bottom nav (UI-003 B).
+ * Main shell: island hub + match-3 campaign + shop + teams + bottom nav.
  */
 export class AppShell {
   readonly root = new Container();
@@ -25,6 +43,7 @@ export class AppShell {
   private overlayHost = new Container();
   private player!: Player;
   private buildings: BuildingState[] = [];
+  private inventory: InventoryItem[] = [];
   private island: IslandMap | null = null;
   private game: GameScreen | null = null;
   private seenBeats = new Set<number>();
@@ -44,7 +63,7 @@ export class AppShell {
       const session = await ensureSession();
       this.player = session.player;
       this.buildings = session.buildings;
-      // Replay-safe: do not auto-show past beats on boot.
+      this.inventory = session.inventory ?? [];
       for (const b of [10, 20, 30, 40, 50, 60, 70]) {
         if (this.player.maxLevelCleared >= b) this.seenBeats.add(b);
       }
@@ -54,12 +73,13 @@ export class AppShell {
         id: 'local',
         guestToken: '',
         displayName: 'Офлайн',
-        coins: 0,
-        diamonds: 0,
+        coins: 300,
+        diamonds: 5,
         buildStars: 0,
         maxLevelCleared: 0,
       };
       this.buildings = [];
+      this.inventory = [];
     }
     await this.buildNav();
     await this.showTab('island');
@@ -119,23 +139,32 @@ export class AppShell {
       return;
     }
     if (tab === 'play') {
-      const campaignLevel = Math.min(70, this.player.maxLevelCleared + 1);
+      const campaignLevelNo = Math.min(100, Math.max(1, this.player.maxLevelCleared + 1));
+      const startingPower = await this.consumeOptionalBooster();
       this.game = new GameScreen(this.app, {
-        campaignLevel,
-        onWon: (info) => void this.handleWin(info.campaignLevel),
+        campaignLevel: campaignLevelNo,
+        startingPower,
+        onWon: (info) => void this.handleWin(info.campaignLevel, info.coinsBase),
       });
       this.content.addChild(this.game.root);
+      return;
+    }
+    if (tab === 'shop') {
+      const shop = new ShopScreen(this.player, this.inventory, (p, inv) => {
+        this.player = p;
+        this.inventory = inv;
+      });
+      this.content.addChild(shop.root);
+      return;
+    }
+    if (tab === 'team') {
+      this.content.addChild(new TeamScreen(this.player).root);
       return;
     }
     const stub = new Graphics().rect(0, 0, DESIGN_WIDTH, DESIGN_HEIGHT).fill({ color: 0x063a2c });
     this.content.addChild(stub);
     const msg = new Text({
-      text:
-        tab === 'shop'
-          ? 'Магазин — скоро (E05)\nбез рекламы'
-          : tab === 'team'
-            ? 'Команды — после серверной готовности (E06)'
-            : 'PvP — дуэли 3 мин (E06)\nSERVER-001 A: риск читов',
+      text: 'PvP — дуэли 3 мин (E06)\nSERVER-001 A: риск читов\nбез платных преимуществ в рейтинге',
       style: new TextStyle({
         fontFamily: 'Trebuchet MS, Segoe UI, sans-serif',
         fontSize: 28,
@@ -148,11 +177,35 @@ export class AppShell {
     this.content.addChild(msg);
   }
 
-  private async handleWin(campaignLevel: number): Promise<void> {
+  /** Auto-use first available booster from inventory when starting a level. */
+  private async consumeOptionalBooster(): Promise<PowerKind | null> {
+    for (const [itemId, power] of Object.entries(BOOSTER_MAP)) {
+      const row = this.inventory.find((i) => i.itemId === itemId && i.qty > 0);
+      if (!row) continue;
+      if (!this.player.guestToken) {
+        row.qty -= 1;
+        return power;
+      }
+      try {
+        const idem = `use:${this.player.id}:${itemId}:${this.player.maxLevelCleared + 1}`;
+        const res = await useInventoryItem(itemId, idem);
+        this.inventory = res.inventory;
+        this.player = { ...this.player, coins: res.coins, diamonds: res.diamonds };
+        return power;
+      } catch (e) {
+        console.warn('booster use failed', e);
+      }
+    }
+    return null;
+  }
+
+  private async handleWin(campaignLevelNo: number, coinsBase: number): Promise<void> {
+    const draft = campaignLevel(campaignLevelNo);
+    const coins = draft?.meta.coinsBase ?? coinsBase;
     if (this.player.guestToken) {
       try {
-        const idem = `clear:${this.player.id}:${campaignLevel}`;
-        const res = await clearLevel(campaignLevel, 50, idem);
+        const idem = `clear:${this.player.id}:${campaignLevelNo}`;
+        const res = await clearLevel(campaignLevelNo, coins, idem);
         this.player = {
           ...this.player,
           buildStars: res.buildStars,
@@ -161,28 +214,28 @@ export class AppShell {
         };
       } catch (e) {
         console.warn('clearLevel failed, applying local progress', e);
-        this.applyLocalClear(campaignLevel);
+        this.applyLocalClear(campaignLevelNo, coins);
       }
     } else {
-      this.applyLocalClear(campaignLevel);
+      this.applyLocalClear(campaignLevelNo, coins);
     }
 
-    const beat = beatForLevel(campaignLevel);
-    if (beat && !this.seenBeats.has(campaignLevel)) {
-      this.seenBeats.add(campaignLevel);
+    const beat = beatForLevel(campaignLevelNo);
+    if (beat && !this.seenBeats.has(campaignLevelNo)) {
+      this.seenBeats.add(campaignLevelNo);
       await this.showStory(beat);
     } else {
       await this.showTab('island');
     }
   }
 
-  private applyLocalClear(level: number): void {
+  private applyLocalClear(level: number, coins: number): void {
     const first = level > this.player.maxLevelCleared;
     this.player = {
       ...this.player,
       maxLevelCleared: Math.max(this.player.maxLevelCleared, level),
       buildStars: this.player.buildStars + (first && level <= 70 ? 1 : 0),
-      coins: this.player.coins + 50,
+      coins: this.player.coins + (first ? coins : 0),
     };
   }
 

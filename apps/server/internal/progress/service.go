@@ -45,8 +45,8 @@ func (s *Service) CreateGuest(ctx context.Context, name string) (Player, error) 
 		name = "Гость"
 	}
 	_, err := s.Pool.Exec(ctx, `
-		INSERT INTO players (id, guest_token, display_name)
-		VALUES ($1, $2, $3)`, id, token, name)
+		INSERT INTO players (id, guest_token, display_name, coins, diamonds)
+		VALUES ($1, $2, $3, 300, 5)`, id, token, name)
 	if err != nil {
 		return Player{}, err
 	}
@@ -58,7 +58,7 @@ func (s *Service) CreateGuest(ctx context.Context, name string) (Player, error) 
 			return Player{}, err
 		}
 	}
-	return Player{ID: id.String(), GuestToken: token, DisplayName: name}, nil
+	return Player{ID: id.String(), GuestToken: token, DisplayName: name, Coins: 300, Diamonds: 5}, nil
 }
 
 func (s *Service) GetByToken(ctx context.Context, token string) (Player, error) {

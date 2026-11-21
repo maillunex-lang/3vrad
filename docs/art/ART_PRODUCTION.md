@@ -14,7 +14,7 @@
 | Match-3 усилители | 4 | 4 | integrated |
 | UI кнопки/иконки/nav | 15+ | 15 | integrated (procedural original) |
 | Зоны ландшафта | 7+sil | 8 | integrated (procedural WIP) |
-| Препятствия Match-3 | 6+ | 0 dedicated | missing (graphics fallback in engine) |
+| Препятствия Match-3 | 6+ | 2 TEMP (crate/ice) | integrated; shells/sand/vines still map→crate/ice |
 | Персонажи | TBD | 0 | blocked on name canon |
 | VFX атласы | 3+ | code particles | partial |
 

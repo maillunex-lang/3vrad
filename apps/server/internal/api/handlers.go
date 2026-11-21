@@ -7,15 +7,17 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/maillunex-lang/3vrad/apps/server/internal/progress"
+	"github.com/maillunex-lang/3vrad/apps/server/internal/teams"
 )
 
-const Version = "0.2.0-e04"
+const Version = "0.3.0-mvp"
 
 type Handlers struct {
 	Pool      *pgxpool.Pool
 	StartedAt time.Time
 	AppEnv    string
 	Progress  *progress.Service
+	Teams     *teams.Service
 }
 
 func (h *Handlers) Healthz(w http.ResponseWriter, r *http.Request) {

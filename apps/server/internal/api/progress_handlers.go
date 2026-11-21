@@ -33,10 +33,16 @@ func (h *Handlers) Me(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusInternalServerError, map[string]any{"error": err.Error()})
 		return
 	}
+	inv, err := h.Progress.ListInventory(r.Context(), p.ID)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]any{"error": err.Error()})
+		return
+	}
 	writeJSON(w, http.StatusOK, map[string]any{
-		"player":    p,
-		"buildings": b,
-		"catalog":   buildings.Catalog,
+		"player":     p,
+		"buildings":  b,
+		"inventory":  inv,
+		"catalog":    buildings.Catalog,
 		"starBudget": buildings.TotalMandatoryStars(),
 	})
 }
@@ -146,7 +152,7 @@ func mapProgressErr(w http.ResponseWriter, err error) {
 	case errors.Is(err, progress.ErrNotFound):
 		writeJSON(w, http.StatusNotFound, map[string]any{"error": "not_found"})
 	case errors.Is(err, progress.ErrInsufficient):
-		writeJSON(w, http.StatusConflict, map[string]any{"error": "insufficient_stars"})
+		writeJSON(w, http.StatusConflict, map[string]any{"error": "insufficient"})
 	case errors.Is(err, progress.ErrLocked):
 		writeJSON(w, http.StatusConflict, map[string]any{"error": "stage_locked"})
 	case errors.Is(err, progress.ErrInvalid):

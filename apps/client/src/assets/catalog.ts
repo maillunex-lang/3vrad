@@ -42,6 +42,10 @@ export function powerPath(power: string): string {
   return assetUrl(`match3/${map[power] ?? 'power_rocket'}.webp`);
 }
 
+export function blockerPath(kind: 'crate' | 'ice'): string {
+  return assetUrl(`match3/blocker_${kind}.webp`);
+}
+
 export const ZONE_BG: Record<string, string> = {
   Z1: assetUrl('terrain/z1_beach.webp'),
   Z2: assetUrl('terrain/z2_shore.webp'),

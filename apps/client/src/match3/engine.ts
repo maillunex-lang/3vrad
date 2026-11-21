@@ -163,9 +163,18 @@ export class Match3Engine {
     return true;
   }
 
+  /** Place a purchased/debug starter power (ignores fail-streak gate). */
+  placeBooster(power: PowerKind): boolean {
+    return this.placePowerNearCenter(power, false);
+  }
+
   applyStartingPower(power: PowerKind): boolean {
     if (this.helpUsed) return false;
     if (this.failStreak < 3) return false;
+    return this.placePowerNearCenter(power, true);
+  }
+
+  private placePowerNearCenter(power: PowerKind, markHelp: boolean): boolean {
     // Place on a swappable gem near center; resume attempt if offered after a loss.
     let placed: Pos | null = null;
     const cr = Math.floor(this.height / 2);
@@ -186,10 +195,9 @@ export class Match3Engine {
       }
     }
     if (!placed) return false;
-    this.helpUsed = true;
+    if (markHelp) this.helpUsed = true;
     if (this.status === 'lost') {
-      this.status = 'playing';
-      this.movesLeft = this.initialMoves;
+      this.status = 'playing';      this.movesLeft = this.initialMoves;
       this.emit({ type: 'status', status: 'playing' });
     }
     this.emit({

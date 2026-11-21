@@ -10,24 +10,23 @@
 |------|--------|------|
 | E01 Фундамент | DONE | PWA+API+CI |
 | E02 Match-3 | ≈ready | engine + campaign DRAFT 100 + clear-on-win |
-| E03 Визуал | IN_PROGRESS | gems/UI/B01/zones + TEMP crate/ice; B02–B20 WIP |
+| E03 Визуал | IN_PROGRESS | art pass: B02–B20 v2, 4 TEMP portraits, 3 VFX; not Premium |
 | E04 Остров | ≈ready | 7 зон, 20 зданий, soft-lock, сюжет 10…70 |
 | E05 Экономика | IN_PROGRESS | guest + shop + inventory (no real payments) |
 | E06 Команды/PvP | scaffold | team create/join + daily quests; PvP stub |
-| E07 100 уровней | DRAFT | 100 playable; **authored grids 1–20** |
+| E07 100 уровней | DRAFT | 100 playable; authored grids 1–20 |
 
-## API (проверено go test)
-- Auth/me/clear/buildings (как раньше)
-- `GET /shop/catalog`, `POST /shop/buy`, `GET /inventory`, `POST /inventory/use`
-- `GET /team`, `POST /team/create`, `POST /team/join` (max 30)
+## Графика (не завышать)
+- B01 gen эталон; B02–B20 **v2 silhouettes**; gen S3 tropical **B03/B05/B10/B20**
+- TEMP portraits: Клеш / Майя(робот) / Кеф / Исследователь
+- VFX: clear_burst, zone_reveal, star_shimmer (+ code sparkles)
+- Журнал: `docs/art/ART_PRODUCTION.md`
 
-## Клиент
-- Вкладки: Остров / Игра (кампания) / Магазин / Команда / PvP-stub
-- 36 vitest; сборка PWA зелёная локально
+## API
+- Auth/me/clear/buildings/shop/inventory/team (+ quests list)
 
-## Не заявлено DONE / MVP
-- Premium art B02–B20, CHAR-диалоги, VFX atlases
-- Утверждение LEVELS-001
-- Полные команды/PvP/античит
-- Реальные платежи / production deploy
-- Ручной Android smoke
+## Не заявлено DONE
+- Полный Premium B02–B20 все стили/этапы
+- Утверждённый CHAR-канон
+- LEVELS-001 баланс
+- Реальные платежи / production

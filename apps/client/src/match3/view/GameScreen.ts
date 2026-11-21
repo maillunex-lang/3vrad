@@ -61,7 +61,7 @@ export class GameScreen {
     this.root.addChild(this.board.root);
 
     this.metaText = new Text({ text: '', style: META });
-    this.metaText.position.set(24, DESIGN_HEIGHT - 150);
+    this.metaText.position.set(24, DESIGN_HEIGHT - 198);
     this.root.addChild(this.metaText);
     this.updateMeta();
     this.buildToolbar();
@@ -97,7 +97,8 @@ export class GameScreen {
 
   private buildToolbar(): void {
     const bar = new Container();
-    bar.position.set(24, DESIGN_HEIGHT - 120);
+    // Keep toolbar above the 100px bottom nav so taps do not collide.
+    bar.position.set(24, DESIGN_HEIGHT - 168);
 
     const mkBtn = (label: string, x: number, fn: () => void) => {
       const g = new Graphics().roundRect(x, 0, 150, 48, 12).fill({ color: 0x0b6e4f });

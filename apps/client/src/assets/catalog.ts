@@ -46,6 +46,29 @@ export function blockerPath(kind: 'crate' | 'ice'): string {
   return assetUrl(`match3/blocker_${kind}.webp`);
 }
 
+/** Story portraits — TEMP concepts until CHAR names/design approved. */
+export const CHAR = {
+  klesh: assetUrl('chars/klesh.webp'),
+  maya: assetUrl('chars/maya.webp'),
+  kef: assetUrl('chars/kef.webp'),
+  explorer: assetUrl('chars/explorer.webp'),
+} as const;
+
+export function portraitForSpeaker(speaker: string): string | null {
+  const key = speaker.trim().toLowerCase();
+  if (key.includes('клеш')) return CHAR.klesh;
+  if (key.includes('майя') || key.includes('робот')) return CHAR.maya;
+  if (key.includes('кеф') || key.includes('жемчуж')) return CHAR.kef;
+  if (key.includes('исследовател')) return CHAR.explorer;
+  return null;
+}
+
+export const VFX = {
+  clearBurst: assetUrl('vfx/clear_burst.webp'),
+  zoneReveal: assetUrl('vfx/zone_reveal.webp'),
+  starShimmer: assetUrl('vfx/star_shimmer.webp'),
+} as const;
+
 export const ZONE_BG: Record<string, string> = {
   Z1: assetUrl('terrain/z1_beach.webp'),
   Z2: assetUrl('terrain/z2_shore.webp'),

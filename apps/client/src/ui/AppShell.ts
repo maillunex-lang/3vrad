@@ -82,14 +82,20 @@ export class AppShell {
       this.inventory = [];
     }
     await this.buildNav();
-    await this.showTab('island');
+    const fromHash = this.tabFromHash();
+    await this.showTab(fromHash ?? 'island', !fromHash);
   }
+
+  private activeTab: Tab = 'island';
+  private hashBound = false;
 
   private async buildNav(): Promise<void> {
     this.nav.removeChildren();
     const bar = new Graphics()
       .rect(0, DESIGN_HEIGHT - 100, DESIGN_WIDTH, 100)
       .fill({ color: 0x04261d, alpha: 0.96 });
+    // Capture all taps in the nav strip so content underneath cannot steal them.
+    bar.eventMode = 'static';
     this.nav.addChild(bar);
 
     const tabs: { id: Tab; icon: string; label: string }[] = [
@@ -103,30 +109,51 @@ export class AppShell {
     for (let i = 0; i < tabs.length; i++) {
       const t = tabs[i]!;
       const x = slot * i + slot / 2;
+      const hit = new Graphics()
+        .rect(slot * i, DESIGN_HEIGHT - 100, slot, 100)
+        .fill({ color: this.activeTab === t.id ? 0x0b6e4f : 0x000000, alpha: this.activeTab === t.id ? 0.35 : 0.001 });
+      hit.eventMode = 'static';
+      hit.cursor = 'pointer';
+      hit.on('pointertap', () => void this.showTab(t.id));
+      this.nav.addChild(hit);
       try {
         const tex = await Assets.load(t.icon);
         const spr = new Sprite(tex);
         spr.anchor.set(0.5);
         spr.position.set(x, DESIGN_HEIGHT - 62);
         spr.scale.set(0.55);
-        spr.eventMode = 'static';
-        spr.cursor = 'pointer';
-        spr.on('pointertap', () => void this.showTab(t.id));
+        spr.eventMode = 'none';
         this.nav.addChild(spr);
       } catch {
         const g = new Graphics().circle(x, DESIGN_HEIGHT - 62, 22).fill({ color: 0x0b6e4f });
-        g.eventMode = 'static';
-        g.on('pointertap', () => void this.showTab(t.id));
+        g.eventMode = 'none';
         this.nav.addChild(g);
       }
       const lab = new Text({ text: t.label, style: LABEL });
       lab.anchor.set(0.5, 0);
       lab.position.set(x, DESIGN_HEIGHT - 36);
+      lab.eventMode = 'none';
       this.nav.addChild(lab);
+    }
+    if (!this.hashBound) {
+      this.hashBound = true;
+      window.addEventListener('hashchange', () => {
+        const tab = this.tabFromHash();
+        if (tab && tab !== this.activeTab) void this.showTab(tab, false);
+      });
     }
   }
 
-  private async showTab(tab: Tab): Promise<void> {
+  private tabFromHash(): Tab | null {
+    const h = (location.hash || '').replace(/^#\/?/, '');
+    if (h === 'island' || h === 'play' || h === 'shop' || h === 'team' || h === 'pvp') return h;
+    return null;
+  }
+
+  private async showTab(tab: Tab, pushHash = true): Promise<void> {
+    this.activeTab = tab;
+    if (pushHash) location.hash = `#/${tab}`;
+    await this.buildNav();
     this.content.removeChildren();
     this.island = null;
     this.game = null;

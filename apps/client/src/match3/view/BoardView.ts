@@ -1,5 +1,5 @@
 import { Assets, Container, Graphics, Sprite, Text, TextStyle, Texture } from 'pixi.js';
-import { blockerPath, gemPath, powerPath } from '../../assets/catalog';
+import { blockerPath, gemPath, powerPath, VFX } from '../../assets/catalog';
 import type { Match3Engine } from '../engine';
 import type { EngineEvent, Cell, Pos } from '../types';
 import { BOARD_BG, CELL_BG, GEM_FILL, GEM_STROKE, POWER_LABEL } from './colors';
@@ -370,18 +370,28 @@ export class BoardView {
 
   private burst(positions: Pos[]): void {
     for (const p of positions) {
-      const g = new Graphics()
-        .circle(
-          this.boardLayer.x + p.c * this.cellSize + this.cellSize / 2,
-          this.boardLayer.y + p.r * this.cellSize + this.cellSize / 2,
-          8,
-        )
-        .fill({ color: 0xfff3b0, alpha: 0.9 });
-      this.fxLayer.addChild(g);
-      void tween(280, (t) => {
-        g.scale.set(1 + t * 2.2);
-        g.alpha = Math.max(0, 1 - t);
-      }).then(() => g.destroy());
+      const cx = this.boardLayer.x + p.c * this.cellSize + this.cellSize / 2;
+      const cy = this.boardLayer.y + p.r * this.cellSize + this.cellSize / 2;
+      const tex = tryTexture(VFX.clearBurst);
+      if (tex) {
+        const spr = new Sprite(tex);
+        spr.anchor.set(0.5);
+        spr.position.set(cx, cy);
+        spr.width = this.cellSize * 1.4;
+        spr.height = this.cellSize * 1.4;
+        this.fxLayer.addChild(spr);
+        void tween(320, (t) => {
+          spr.scale.set(1 + t * 0.8);
+          spr.alpha = Math.max(0, 1 - t);
+        }).then(() => spr.destroy());
+      } else {
+        const g = new Graphics().circle(cx, cy, 8).fill({ color: 0xfff3b0, alpha: 0.9 });
+        this.fxLayer.addChild(g);
+        void tween(280, (t) => {
+          g.scale.set(1 + t * 2.2);
+          g.alpha = Math.max(0, 1 - t);
+        }).then(() => g.destroy());
+      }
       this.sparkleAt(p);
     }
   }

@@ -1,5 +1,14 @@
 import { Application, Assets } from 'pixi.js';
-import { gemPath, powerPath, UI, ZONE_BG, buildingSpritePath } from './assets/catalog';
+import {
+  blockerPath,
+  buildingSpritePath,
+  CHAR,
+  gemPath,
+  powerPath,
+  UI,
+  VFX,
+  ZONE_BG,
+} from './assets/catalog';
 import { DESIGN_HEIGHT, DESIGN_WIDTH } from './config';
 import { computeViewport } from './layout/viewport';
 import { AppShell } from './ui/AppShell';
@@ -12,14 +21,23 @@ function setStatus(text: string): void {
 }
 
 async function preloadCoreAssets(): Promise<void> {
+  const buildingUrls: string[] = [];
+  for (let i = 1; i <= 20; i++) {
+    const id = `B${String(i).padStart(2, '0')}`;
+    buildingUrls.push(buildingSpritePath(id, 0));
+    buildingUrls.push(buildingSpritePath(id, 1));
+    buildingUrls.push(buildingSpritePath(id, 3, 'tropical'));
+  }
   const urls = [
     ...['mango', 'dragon', 'lime', 'passion', 'blue'].map(gemPath),
     ...['rocket_h', 'bomb', 'pearl', 'propeller'].map(powerPath),
+    blockerPath('crate'),
+    blockerPath('ice'),
     ...Object.values(UI),
     ...Object.values(ZONE_BG),
-    buildingSpritePath('B01', 0),
-    buildingSpritePath('B01', 1),
-    buildingSpritePath('B01', 2, 'tropical'),
+    ...Object.values(CHAR),
+    ...Object.values(VFX),
+    ...buildingUrls,
   ];
   await Promise.all(
     urls.map(async (u) => {

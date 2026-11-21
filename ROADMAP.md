@@ -24,8 +24,10 @@ Monorepo, Pixi PWA 9:16, Go+Postgres, CI, staging Compose, smoke.
 - [x] Match-3 gems + powerups (generated+processed).
 - [x] B01 эталон S0/S1/S3-T/L/F в игре (needs visual QA).
 - [x] Obstacle art TEMP: crate/ice webp на поле.
-- [ ] VFX atlases, character art.
-- [ ] Замена B02–B20 procedural → финальный Premium art.
+- [x] TEMP portraits ×4 + StoryOverlay; VFX clear/zone/star webp.
+- [x] B02–B20 v2 silhouettes; gen S3 tropical для B03/B05/B10/B20.
+- [ ] Полный Premium pass всех состояний/стилей B02–B20.
+- [ ] Утверждённый CHAR-канон + финальные портреты.
 **Не объявлять Premium Stylized завершённым.**
 
 ### E04 - Остров, строительство и сюжет [IN_PROGRESS ≈ ready]

@@ -9,7 +9,7 @@
 | Группа | Нужно (ориентир) | Есть в игре | Статус |
 |--------|------------------|-------------|---------|
 | B01 эталон (5 спрайтов) | 5 | 5 webp | integrated, needs visual QA vs design A |
-| B02–B20 состояния | ~80 | v2 procedural S0/S1/lux/fan + **gen S3 tropical для всех B02–B20** | **WIP** — S0/S1/lux/fantasy ещё не gen; не Premium |
+| B02–B20 состояния | ~80 | gen S3 tropical **все B02–B20**; gen S0/S1 для B03/B05/B10/B20; lux/fantasy ещё v2 | **WIP** — не Premium |
 | Match-3 фишки | 5 | 5 | integrated |
 | Match-3 усилители | 4 | 4 | integrated |
 | UI кнопки/иконки/nav | 15+ | 15 | integrated (procedural original) |

@@ -1,7 +1,8 @@
 # Фактический статус разработки
 
 **Обновлено:** 2026-11-21  
-**Ветка:** `cursor/e04-island-buildings-067d`  
+**Ветка:** `main` (рабочая; feature-ветки/PR #1–#2 влиты сюда)  
+**HEAD:** после push — tip с island/build/art  
 **Канон:** GDD-01–15 APPROVED; BUILDINGS-001 / ISLAND-MAP-001 / ASSETS-001 / B01-DESIGN-001 A утверждены как baseline.
 
 ## Сводка

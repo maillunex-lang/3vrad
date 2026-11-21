@@ -4,6 +4,7 @@
 - GDD-01–15: **DONE** (утверждено).
 - BUILDINGS-001 / ISLAND-MAP-001 / ASSETS-001 / B01-DESIGN-001 A: **APPROVED baseline**.
 - `LEVELS_001_DRAFT.md`: DRAFT (баланс не финальный).
+- Рабочая ветка: **`main`** (весь код E01–E04 tip влит и пушится сюда).
 - Код: E01 DONE · E02≈ready · E03/E04 **IN_PROGRESS**.
 - Факт: [docs/STATUS.md](docs/STATUS.md) · графика: [docs/art/ART_PRODUCTION.md](docs/art/ART_PRODUCTION.md).
 

@@ -3,16 +3,35 @@
 Вертикальная (9:16) онлайн PWA-игра жанра Match-3 с восстановлением тропического архипелага, юмористическим сюжетом, PvP и командами.
 
 ## Статус
-- GDD-01–10 утверждены. Разработка не начата.
-- Канон: [docs/GDD_DECISIONS.md](docs/GDD_DECISIONS.md).
-- План: [ROADMAP.md](ROADMAP.md).
-- Правила автономного Cursor: [AGENTS.md](AGENTS.md).
-- Вопросы и риски: [docs/OPEN_QUESTIONS.md](docs/OPEN_QUESTIONS.md).
+- GDD-01–13 утверждены. `LEVELS_001_DRAFT.md` — черновик контента (не финальный баланс).
+- Код: фундамент E01 (клиент/сервер/CI) в разработке; ядро Match-3 — следующий этап.
+- Канон: [docs/GDD_DECISIONS.md](docs/GDD_DECISIONS.md), [docs/GDD_11.md](docs/GDD_11.md), [docs/GDD_12.md](docs/GDD_12.md), [docs/GDD_13.md](docs/GDD_13.md).
+- План: [ROADMAP.md](ROADMAP.md) · факт: [docs/STATUS.md](docs/STATUS.md).
+- Cursor: [AGENTS.md](AGENTS.md) · риски: [docs/OPEN_QUESTIONS.md](docs/OPEN_QUESTIONS.md).
 
 ## Технологии
-PixiJS 8 + TypeScript, PWA, Go, PostgreSQL, WebSocket, HTTPS, простая веб-админка игроков и уровней. Версионированные ассеты и автоматическое обновление контента. Только PWA, без APK и Capacitor.
+PixiJS 8 + TypeScript PWA · Go + PostgreSQL · React-админка (игроки/уровни) · Docker Compose · CI. Без APK/Capacitor/рекламы/жизней.
 
-## Порядок
-Строго последовательная разработка; первая играбельная версия (MVP) содержит 100 уровней, команды и экономику. Публичная бета выпускается с постепенным добавлением островов. CI/CD с отдельным тестовым окружением. Основная приёмка ручная.
+## Быстрый старт (dev)
+```bash
+cp .env.example .env
+# PostgreSQL с пользователем/БД paradise (см. .env.example)
+make deps
+make server-dev   # :8080
+make client-dev   # :5173
+# опционально: make admin-dev  # :5174
+make smoke        # healthz/readyz/version
+```
 
-Не путать планируемый функционал с реализованным. Все численные сроки и объёмы работ уточняются после исследования.
+Compose: `make up` → API `:8080`, клиент `:8088`, админка `:8089`.
+
+Staging: `deploy/staging/` + `.env` из `.env.example`. **Production не публиковать без разрешения владельца.**
+
+## Структура
+- `apps/client` — PWA игра
+- `apps/server` — Go API
+- `apps/admin` — scaffold админки
+- `deploy/` — Compose local/staging
+- `docs/testing/` — ручные чек-листы
+
+Не путать планируемое с реализованным. Проверяйте `docs/STATUS.md`.

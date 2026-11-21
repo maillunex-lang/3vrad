@@ -1,0 +1,60 @@
+# Local / staging-like stack. Production requires separate owner approval.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: paradise
+      POSTGRES_PASSWORD: paradise_dev
+      POSTGRES_DB: paradise
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paradise -d paradise"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ../apps/server
+    environment:
+      APP_ENV: local
+      LOG_LEVEL: info
+      SERVER_ADDR: ":8080"
+      DATABASE_URL: postgres://paradise:paradise_dev@db:5432/paradise?sslmode=disable
+      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173,http://localhost:8088,http://localhost:8089
+      MIGRATIONS_DIR: /app/migrations
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/app/server"]
+      # distroless has no curl; rely on compose start + external smoke
+      disable: true
+
+  client:
+    build:
+      context: ../apps/client
+      args:
+        VITE_API_BASE_URL: http://localhost:8080
+    ports:
+      - "8088:80"
+    depends_on:
+      - api
+
+  admin:
+    build:
+      context: ../apps/admin
+      args:
+        VITE_API_BASE_URL: http://localhost:8080
+    ports:
+      - "8089:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:

@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build
+dist/
+build/
+*.exe
+*.test
+apps/server/bin/
+apps/server/server
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+deploy/**/.env
+!deploy/**/.env.example
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.log
+
+# Coverage / cache
+coverage/
+.nyc_output/
+*.tsbuildinfo
+.vite/
+.turbo/
+.cache/
+
+# PWA generated
+apps/client/dev-dist/
+
+# Test artifacts
+/tmp/
+playwright-report/
+test-results/

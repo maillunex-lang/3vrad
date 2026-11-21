@@ -1,0 +1,48 @@
+:root {
+  color-scheme: light;
+  --bg: #f3f7f4;
+  --ink: #14352c;
+  --accent: #0b6e4f;
+  --line: #c5d9cf;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(160deg, #e8f5ef, #f7faf8 45%, #e3eef8);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+.shell {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+}
+
+header h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+  color: var(--accent);
+}
+
+header p,
+section p {
+  line-height: 1.5;
+}
+
+section {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+code {
+  background: #e7f2ec;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+}

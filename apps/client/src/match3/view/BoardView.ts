@@ -1,6 +1,6 @@
 import { Container, Graphics, Text, TextStyle } from 'pixi.js';
 import type { Match3Engine } from '../engine';
-import type { Cell, Pos } from '../types';
+import type { EngineEvent, Cell, Pos } from '../types';
 import { BOARD_BG, CELL_BG, GEM_FILL, GEM_STROKE, POWER_LABEL } from './colors';
 
 const TITLE = new TextStyle({
@@ -29,6 +29,9 @@ export type BoardViewOpts = {
   maxHeight: number;
 };
 
+/**
+ * Pixi view with a short FX playback queue so sync engine cascades still feel stepped.
+ */
 export class BoardView {
   readonly root = new Container();
   private boardLayer = new Container();
@@ -41,6 +44,9 @@ export class BoardView {
   private selected: Pos | null = null;
   private gemNodes = new Map<string, Container>();
   private helpContainer: Container | null = null;
+  private queue: EngineEvent[] = [];
+  private playing = false;
+  private unsub: (() => void) | null = null;
 
   constructor(
     private engine: Match3Engine,
@@ -60,42 +66,68 @@ export class BoardView {
     this.drawStaticBoard();
     this.syncFromEngine();
     this.bindInput();
-
-    engine.on((ev) => {
-      if (ev.type === 'swap' || ev.type === 'swap_revert') {
-        this.animateSwap(ev.a, ev.b, () => undefined);
-        return;
-      }
-      if (ev.type === 'clear') {
-        this.burst(ev.cells.map((c) => c.pos));
-        return;
-      }
-      if (ev.type === 'help_offer') this.showHelp(ev.options);
-      if (ev.type === 'hint') this.flashHints(ev.moves);
-      // Full board rebuild once per player action (engine is sync; FX run in parallel).
-      if (ev.type === 'resolve_end' || ev.type === 'shuffle' || ev.type === 'status') {
-        window.setTimeout(() => this.syncFromEngine(), 150);
-      }
-    });
+    this.attachEngine(engine);
   }
 
   setEngine(engine: Match3Engine): void {
     this.engine = engine;
     this.selected = null;
+    this.queue = [];
+    this.playing = false;
     this.layoutMetrics();
     this.drawStaticBoard();
     this.syncFromEngine();
-    engine.on((ev) => {
-      if (ev.type === 'swap' || ev.type === 'swap_revert') {
-        this.animateSwap(ev.a, ev.b, () => undefined);
+    this.attachEngine(engine);
+  }
+
+  private attachEngine(engine: Match3Engine): void {
+    this.unsub?.();
+    this.unsub = engine.on((ev) => {
+      if (ev.type === 'hint') {
+        this.flashHints(ev.moves);
         return;
       }
-      if (ev.type === 'clear') this.burst(ev.cells.map((c) => c.pos));
-      if (ev.type === 'help_offer') this.showHelp(ev.options);
-      if (ev.type === 'resolve_end' || ev.type === 'shuffle' || ev.type === 'status') {
-        window.setTimeout(() => this.syncFromEngine(), 150);
+      if (ev.type === 'help_offer') {
+        this.showHelp(ev.options);
+        return;
       }
+      this.queue.push(ev);
+      void this.pump();
     });
+  }
+
+  private async pump(): Promise<void> {
+    if (this.playing) return;
+    this.playing = true;
+    while (this.queue.length) {
+      const ev = this.queue.shift()!;
+      await this.play(ev);
+    }
+    this.playing = false;
+  }
+
+  private play(ev: EngineEvent): Promise<void> {
+    switch (ev.type) {
+      case 'swap':
+      case 'swap_revert':
+        return this.animateSwap(ev.a, ev.b);
+      case 'clear':
+        // Engine already finished resolve; bursts mark cleared cells, board rebuilds on resolve_end.
+        this.burst(ev.cells.map((c) => c.pos));
+        return wait(70);
+      case 'fall':
+        // Intermediate fall poses are not snapshotted by sync engine; full rebuild on resolve_end.
+        return wait(50);
+      case 'resolve_end':
+      case 'shuffle':
+      case 'status':
+        this.syncFromEngine();
+        return wait(40);
+      case 'power_created':
+        return Promise.resolve();
+      default:
+        return Promise.resolve();
+    }
   }
 
   private layoutMetrics(): void {
@@ -139,7 +171,6 @@ export class BoardView {
   }
 
   private syncFromEngine(): void {
-    // Remove old gem nodes
     for (const node of this.gemNodes.values()) node.destroy();
     this.gemNodes.clear();
 
@@ -205,7 +236,6 @@ export class BoardView {
         .circle(0, 0, radius)
         .fill({ color: GEM_FILL[cell.gem] })
         .stroke({ width: 3, color: GEM_STROKE[cell.gem] });
-      // gloss
       g.ellipse(-radius * 0.25, -radius * 0.3, radius * 0.35, radius * 0.2).fill({
         color: 0xffffff,
         alpha: 0.35,
@@ -220,7 +250,7 @@ export class BoardView {
         .stroke({ width: 2, color: 0xe0f7ff, alpha: 0.8 });
       node.addChild(ice);
       const t = new Text({
-        text: `❄${cell.blockerLayers}`,
+        text: `I${cell.blockerLayers}`,
         style: new TextStyle({ fontSize: 14, fill: '#eafcff' }),
       });
       t.anchor.set(0.5);
@@ -247,6 +277,7 @@ export class BoardView {
   private bindInput(): void {
     this.boardLayer.eventMode = 'static';
     this.boardLayer.on('pointertap', (e) => {
+      if (this.playing || this.queue.length) return;
       const local = this.boardLayer.toLocal(e.global);
       const c = Math.floor(local.x / this.cellSize);
       const r = Math.floor(local.y / this.cellSize);
@@ -259,21 +290,13 @@ export class BoardView {
     if (this.engine.snapshot().status !== 'playing') return;
     const cell = this.engine.cellAt(pos.r, pos.c);
     if (!this.selected) {
-      if (cell?.power && !cell.blocker) {
-        // second tap pattern: select first
-        this.selected = pos;
-        this.syncFromEngine();
-        return;
-      }
       this.selected = pos;
       this.syncFromEngine();
       return;
     }
     if (this.selected.r === pos.r && this.selected.c === pos.c) {
-      // activate power on double-select
       if (cell?.power) this.engine.activateCellPower(pos);
       this.selected = null;
-      this.syncFromEngine();
       return;
     }
     const adj =
@@ -281,7 +304,6 @@ export class BoardView {
     if (adj) {
       this.engine.trySwap(this.selected, pos);
       this.selected = null;
-      this.syncFromEngine();
       return;
     }
     this.selected = pos;
@@ -295,26 +317,16 @@ export class BoardView {
     };
   }
 
-  private animateSwap(a: Pos, b: Pos, done: () => void): void {
+  private animateSwap(a: Pos, b: Pos): Promise<void> {
     const na = this.gemNodes.get(`${a.r},${a.c}`);
     const nb = this.gemNodes.get(`${b.r},${b.c}`);
-    if (!na || !nb) {
-      done();
-      return;
-    }
+    if (!na || !nb) return Promise.resolve();
     const ca = this.cellCenter(a);
     const cb = this.cellCenter(b);
-    const start = performance.now();
-    const dur = 140;
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / dur);
-      const e = t * (2 - t);
+    return tween(140, (e) => {
       na.position.set(ca.x + (cb.x - ca.x) * e, ca.y + (cb.y - ca.y) * e);
       nb.position.set(cb.x + (ca.x - cb.x) * e, cb.y + (ca.y - cb.y) * e);
-      if (t < 1) requestAnimationFrame(tick);
-      else done();
-    };
-    requestAnimationFrame(tick);
+    });
   }
 
   private burst(positions: Pos[]): void {
@@ -327,18 +339,10 @@ export class BoardView {
         )
         .fill({ color: 0xfff3b0, alpha: 0.9 });
       this.fxLayer.addChild(g);
-      let t = 0;
-      const tick = () => {
-        t += 0.08;
-        g.scale.set(1 + t * 2);
+      void tween(280, (t) => {
+        g.scale.set(1 + t * 2.2);
         g.alpha = Math.max(0, 1 - t);
-        if (t >= 1) {
-          g.destroy();
-          return;
-        }
-        requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
+      }).then(() => g.destroy());
     }
   }
 
@@ -392,4 +396,21 @@ export class BoardView {
     this.root.addChild(box);
     this.helpContainer = box;
   }
+}
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function tween(durationMs: number, onUpdate: (t01: number) => void): Promise<void> {
+  return new Promise((resolve) => {
+    const start = performance.now();
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / durationMs);
+      onUpdate(t * (2 - t));
+      if (t < 1) requestAnimationFrame(tick);
+      else resolve();
+    };
+    requestAnimationFrame(tick);
+  });
 }

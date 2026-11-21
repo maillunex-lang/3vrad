@@ -1,4 +1,4 @@
-import { Application, Container, Graphics, Sprite, Text, TextStyle, Assets } from 'pixi.js';
+import { Application, Container, Graphics, Rectangle, Sprite, Text, TextStyle, Assets } from 'pixi.js';
 import {
   clearLevel,
   ensureSession,
@@ -91,11 +91,13 @@ export class AppShell {
 
   private async buildNav(): Promise<void> {
     this.nav.removeChildren();
+    this.nav.eventMode = 'static';
+    this.nav.hitArea = new Rectangle(0, DESIGN_HEIGHT - 100, DESIGN_WIDTH, 100);
+
     const bar = new Graphics()
       .rect(0, DESIGN_HEIGHT - 100, DESIGN_WIDTH, 100)
       .fill({ color: 0x04261d, alpha: 0.96 });
-    // Capture all taps in the nav strip so content underneath cannot steal them.
-    bar.eventMode = 'static';
+    bar.eventMode = 'none';
     this.nav.addChild(bar);
 
     const tabs: { id: Tab; icon: string; label: string }[] = [
@@ -109,13 +111,18 @@ export class AppShell {
     for (let i = 0; i < tabs.length; i++) {
       const t = tabs[i]!;
       const x = slot * i + slot / 2;
-      const hit = new Graphics()
-        .rect(slot * i, DESIGN_HEIGHT - 100, slot, 100)
-        .fill({ color: this.activeTab === t.id ? 0x0b6e4f : 0x000000, alpha: this.activeTab === t.id ? 0.35 : 0.001 });
-      hit.eventMode = 'static';
-      hit.cursor = 'pointer';
-      hit.on('pointertap', () => void this.showTab(t.id));
-      this.nav.addChild(hit);
+      const slotBox = new Container();
+      slotBox.position.set(slot * i, DESIGN_HEIGHT - 100);
+      slotBox.eventMode = 'static';
+      slotBox.cursor = 'pointer';
+      slotBox.hitArea = new Rectangle(0, 0, slot, 100);
+      if (this.activeTab === t.id) {
+        const active = new Graphics().rect(0, 0, slot, 100).fill({ color: 0x0b6e4f, alpha: 0.4 });
+        active.eventMode = 'none';
+        slotBox.addChild(active);
+      }
+      slotBox.on('pointertap', () => void this.showTab(t.id));
+      this.nav.addChild(slotBox);
       try {
         const tex = await Assets.load(t.icon);
         const spr = new Sprite(tex);
@@ -145,7 +152,8 @@ export class AppShell {
   }
 
   private tabFromHash(): Tab | null {
-    const h = (location.hash || '').replace(/^#\/?/, '');
+    const h = (location.hash || '').replace(/^#\/?/, '').toLowerCase();
+    if (h === 'game') return 'play';
     if (h === 'island' || h === 'play' || h === 'shop' || h === 'team' || h === 'pvp') return h;
     return null;
   }

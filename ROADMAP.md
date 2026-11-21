@@ -1,61 +1,92 @@
-# Райский остров - дорожная карта
+# Райский остров — дорожная карта
 
-## Статус
-- GDD-01–15: **DONE** (утверждено).
-- BUILDINGS-001 / ISLAND-MAP-001 / ASSETS-001 / B01-DESIGN-001 A: **APPROVED baseline**.
-- `LEVELS_001_DRAFT.md`: DRAFT (баланс не финальный).
-- Рабочая ветка: **`main`** (весь код E01–E04 tip влит и пушится сюда).
-- Код: E01 DONE · E02≈ready · E03/E04≈ready · E05/E06 **IN_PROGRESS** (магазин+команды scaffold) · кампания 100 DRAFT.
-- Факт: [docs/STATUS.md](docs/STATUS.md) · графика: [docs/art/ART_PRODUCTION.md](docs/art/ART_PRODUCTION.md).
+## Источники истины
+1. `docs/GDD_DECISIONS.md` — канон (не менять без согласования).
+2. Этот файл — порядок работ и критерии готовности.
+3. `docs/OPEN_QUESTIONS.md` — открытые риски.
+4. `docs/STATUS.md` — фактический снимок кода.
+5. `docs/art/ART_PRODUCTION.md` — журнал графики (не завышать статус).
 
-## Этапы
+**Рабочая ветка:** `main`  
+**Tip (после merge nav/content):** см. `git rev-parse HEAD` на `main`.
 
-### E01 - Фундамент [DONE]
-Monorepo, Pixi PWA 9:16, Go+Postgres, CI, staging Compose, smoke.
+## Сводка этапов
 
-### E02 - Ядро Match-3 [IN_PROGRESS ≈ ready]
-- [x] ADR-002, engine, 10 verify levels, FX queue, powerups/blockers.
-- [x] Спрайты фишек/усилителей подключены (с fallback).
-- [x] Кампания 1–100 как `campaignDraft` (DRAFT, не финальный баланс).
-- [ ] Ручной Android smoke E02_MATCH3.
+| Этап | Статус | Критерий DONE |
+|------|--------|---------------|
+| E01 Фундамент | **DONE** | Monorepo, PWA, Go+PG, CI, Compose |
+| E02 Match-3 | ≈ready | Ручной Android smoke E02_MATCH3 |
+| E03 Визуал | IN_PROGRESS | Visual QA B01 + не выдавать WIP за Premium |
+| E04 Остров | ≈ready | Android smoke карты + приёмка B01 |
+| E05 Экономика | IN_PROGRESS | Email-привязка / утверждённые цены — владельцем |
+| E06 Команды/PvP | scaffold | Общий остров, чат, награды квестов, PvP |
+| E07 100 уровней | DRAFT | Authored 41–100 + плейтест + утверждение баланса |
+| E08–E10 | later | VIP/pass без реальных списаний; бета; prod только с разрешения |
 
-### E03 - Визуал и UX [IN_PROGRESS]
-- [x] Палитра / UI-кнопки / nav / валютные иконки (procedural original).
-- [x] Match-3 gems + powerups (generated+processed).
-- [x] B01 эталон S0/S1/S3-T/L/F в игре (needs visual QA).
-- [x] Obstacle art TEMP: crate/ice webp на поле.
-- [x] TEMP portraits ×4 + StoryOverlay; VFX clear/zone/star webp.
-- [x] B02–B20 gen S0+S1+S3 tropical (все 19 зданий).
-- [ ] Luxury/fantasy S3 gen + полный Premium pass.
+---
+
+### E01 — Фундамент [DONE]
+- [x] Monorepo, PixiJS 8 PWA 9:16, Go API, PostgreSQL, CI, staging Compose, smoke.
+
+### E02 — Ядро Match-3 [≈ready]
+- [x] ADR-002, engine, verify levels, FX queue, powerups/blockers (crate/ice).
+- [x] Спрайты фишек/усилителей (с fallback).
+- [x] Кампания 1–100 `campaignDraft` (**DRAFT**, не финальный баланс).
+- [ ] Ручной Android / browser smoke E02_MATCH3 (честный чеклист).
+
+### E03 — Визуал и UX [IN_PROGRESS]
+- [x] Палитра, UI, nav, валюты (original procedural).
+- [x] Gems + powerups; obstacle TEMP crate/ice.
+- [x] B01 эталон S0/S1/S3 T/L/F в игре (**needs visual QA**).
+- [x] B02–B20: gen/procedural S0+S1+S3 tropical **и** S3 luxury/fantasy файлы (v2) — **не Premium**.
+- [x] TEMP portraits ×4 + StoryOverlay; VFX clear/zone/star.
+- [x] Bottom nav: стабильные hit-target (не пересобирать на каждый tab).
+- [ ] Visual QA B01 vs design A; улучшение art без ложного «Premium DONE».
 - [ ] Утверждённый CHAR-канон + финальные портреты.
-**Не объявлять Premium Stylized завершённым.**
 
-### E04 - Остров, строительство и сюжет [IN_PROGRESS ≈ ready]
-- [x] 7 зон, 20 зданий, сервер звёзд, soft-lock 1–70, сюжет 10…70 TEMP.
-- [x] Победа → clear → остров; стили 20/40.
-**Осталось для DONE:** ручной Android smoke карты + визуальная приёмка B01.
+### E04 — Остров, строительство, сюжет [≈ready]
+- [x] 7 зон, 20 зданий, сервер звёзд, soft-lock 1–70.
+- [x] Сюжетные биты 10…70 TEMP; победа → clear → остров.
+- [x] Стили tropical / luxury@20 / fantasy@40 (soft-gate).
+- [ ] Ручной smoke карты острова + визуальная приёмка.
 
-### E05 - Прогресс и экономика [IN_PROGRESS]
-- [x] Гостевой токен, ledger, first-clear stars, стартовые 🪙/💎.
-- [x] Магазин усилителей/наборов за монеты/алмазы (идемпотентно, без рекламы, без реальных платежей).
-- [x] Инвентарь + авто-расход бустера на старт уровня.
-- [ ] Привязка аккаунта email (OPEN_QUESTIONS #3).
+### E05 — Прогресс и экономика [IN_PROGRESS]
+- [x] Гостевой токен, ledger, first-clear ★, стартовые монеты/алмазы.
+- [x] Магазин + инвентарь + авто-бустер на старт (идемпотентно; **без рекламы и реальных платежей**).
+- [ ] Привязка email (OPEN_QUESTIONS #3).
 - [ ] Утверждённые цены (OPEN_QUESTIONS #12 / E08).
 
-### E06 - Онлайн / команды / PvP [IN_PROGRESS scaffold]
-- [x] Команды: create/join/me, лимит 30, код приглашения.
-- [x] Ежедневные командные квесты (progress scaffold, без наградного фарма).
-- [x] Инкремент квестов с clear (`daily_clears`) / build (`daily_builds`); суточный reset.
-- [ ] Общий остров / чат / награды квестов.
-- [ ] PvP дуэли 3 мин + античит-мониторинг (SERVER-001 A риск).
+### E06 — Онлайн / команды / PvP [scaffold]
+- [x] Команды create/join/me, лимит 30, invite code.
+- [x] Daily quests: `daily_clears` / `daily_builds` (+ increment с clear/build, cap, UTC reset).
+- [ ] Награды квестов (без фарма).
+- [ ] Общий остров команды / чат (модерация — OPEN_QUESTIONS #11).
+- [ ] PvP дуэли 3 мин + мониторинг (SERVER-001 A: **риск читов**, не скрывать).
 
-### E07 - Контент 100 уровней [IN_PROGRESS DRAFT]
-- [x] Playable DRAFT pack из LEVELS_001 (не утверждён как баланс).
-- [x] Авторские карты клеток уровней 1–40.
-- [ ] Карты 41–100 / плейтесты / утверждение владельцем.
+### E07 — Контент 100 уровней [DRAFT]
+- [x] Playable pack из `LEVELS_001_DRAFT.md` (не утверждён).
+- [x] Авторские карты клеток **1–40**.
+- [ ] Авторские карты **41–100**.
+- [ ] Плейтесты / баланс / утверждение владельцем.
+- [ ] Админ-редактор уровней (ADMIN-001 A scope).
 
-### E08–E10
-Монетизация VIP/pass (без реальных списаний без разрешения), приёмка, публичная бета. Production только с разрешения.
+### E08–E10 — Монетизация, приёмка, бета
+- VIP/pass **без реальных списаний** без отдельного разрешения.
+- Публичная бета с постепенным добавлением островов.
+- Production / платежи / удаление данных — только с разрешения владельца.
 
-## Правило обновления
-Статусы + доказательства. Не менять GDD без согласования. Не выдавать WIP-арт за финал.
+---
+
+## Следующие задачи (приоритет)
+
+1. **Ручной smoke** nav + Match-3 + остров (закрыть E02/E04 acceptance).
+2. **Authored grids 41–60** (затем 61–100).
+3. **Награды командных квестов** (без эксплойта фарма).
+4. Art polish (не объявлять Premium) / CHAR канон — по решению владельца.
+5. PvP — только после явного приоритета; помнить SERVER-001 A.
+
+## Правила
+- Этапы строго по порядку критериев; не выдавать заглушки за готовые фичи.
+- Не менять GDD без согласования; обратимые ADR — ок.
+- Не коммитить секреты; staging отдельно от prod.
+- Документация = факты (сборка / тест / наблюдаемый результат).

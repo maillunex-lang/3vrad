@@ -9,7 +9,7 @@
 | Группа | Нужно (ориентир) | Есть в игре | Статус |
 |--------|------------------|-------------|---------|
 | B01 эталон (5 спрайтов) | 5 | 5 webp | integrated, needs visual QA vs design A |
-| B02–B20 состояния | ~80 | gen **S0+S1+S3 tropical для всех B02–B20**; lux/fantasy ещё v2 procedural | **WIP** — не Premium |
+| B02–B20 состояния | ~80 | S0+S1+S3 tropical **и** S3 luxury/fantasy (v2 procedural) для всех B02–B20 | **WIP** — не Premium |
 | Match-3 фишки | 5 | 5 | integrated |
 | Match-3 усилители | 4 | 4 | integrated |
 | UI кнопки/иконки/nav | 15+ | 15 | integrated (procedural original) |
@@ -30,7 +30,7 @@
 ## Ограничения
 - GenerateImage → JPG без альфы → flood-fill WebP.
 - Не объявлять Premium Stylized / CHAR канон завершёнными.
-- Остальные S3 luxury/fantasy и S0/S1 для gen-зданий пока procedural/v2.
+- Luxury/fantasy S3 есть как v2 procedural webp; это не финальный Premium pass.
 
 ## Пайплайн
 `Requirement → Generate/Procedural → process_sprites → public/assets → Assets.load → сцена`
